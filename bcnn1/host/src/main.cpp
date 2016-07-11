@@ -33,8 +33,8 @@ using namespace aocl_utils;
 	bool *X1 = (bool*) memalign ( AOCL_ALIGNMENT, (sizeof(bool)*128*34*34));
 	int *Y1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)*128*32*32));
 
-	size_t global[2];                       // global domain size for our calculation
-	size_t local[2];                       	// local domain size for our calculation
+	size_t global[3];                       // global domain size for our calculation
+	size_t local[3];                       	// local domain size for our calculation
 
 	cl_platform_id platform;                // compute platform id
 	cl_device_id device;                	// compute device id
@@ -99,6 +99,7 @@ int initialize(){
     {
         printf("Error: Failed to create compute program!\n");
         return EXIT_FAILURE;
+
     }
 
     // Build the program executable
@@ -118,6 +119,9 @@ int initialize(){
 	//
 	kernel[0] = clCreateKernel(program, "Conv1", &err);
 	checkerror(err,"Error: Failed to create compute kernel[0]!");
+
+	kernel[1] = clCreateKernel(program, "intialize", &err);
+	checkerror(err,"Error: Failed to create compute kernel[1]!");
 
 	//kernel[1] = clCreateKernel(program, "conv2", &err);
 	//checkerror(err,"Error: Failed to create compute kernel[1]!");
@@ -145,9 +149,12 @@ void run(){
 
 	checkerror(err,"Error: Failed to set kernel arguments! - kernel[0]");
 
+	global = {128,34,34};
+	err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
+	checkerror(err,"Error: Failed to execute kernel[1]");
 	// Execute the kernel over the entire range of our 1d input data set
-	global = {1,1};
-	err = clEnqueueNDRangeKernel(queue[0], kernel[0], 2, NULL, global, NULL, 0, NULL, NULL);
+	global = {128,32,32};
+	err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
 	checkerror(err,"Error: Failed to execute kernel[0]");
 
 	//err = clEnqueueNDRangeKernel(queue[0], kernel[1], 2, NULL, global, NULL, 0, NULL, NULL);
