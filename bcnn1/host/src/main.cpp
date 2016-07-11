@@ -174,18 +174,22 @@ void run(){
 	correct=0;
 	int count=0;
 	int flag=0;
-	for(unsigned char i = 0; i < 128; i++){
-		for(unsigned char j = 0; j < 34; j++){
-			for(unsigned char k = 0; k < 34; k++){
+	for(unsigned char i = 0; i < 1; i++){
+		for(unsigned char j = 0; j < 32; j++){
+			for(unsigned char k = 0; k < 32; k++){
 				count++;
-				if(X1[(k + (j * 34) + (i * (34*34)))]  == fmap1[i][j][k])
+				if(Y1[(k + (j * 32) + (i * (32*32)))]  == act1[i][j][k]){
+					//printf("Expected = %d  Optained = %d\n",act1[i][j][k], Y1[(k + (j * 32) + (i * (32*32)))]);
 					correct++;
+				}
 				//if(act1[i][j][k] == Y1[(j * 18) + k + (i * (18*18))])
 				//	correct++;
 				//else if (X1[(k + (j * 34) + (i * (34*34)))] == 0)
 				//	correct++;
-				else
-					flag++;		
+				else{
+					printf("Expected = %d  Optained = %d\n",act1[i][j][k], Y1[(k + (j * 32) + (i * (32*32)))]);
+					flag++;	
+				}
 			}
 		}
 		if(flag > 0)
@@ -193,7 +197,7 @@ void run(){
 	flag=0;
 	}
 
-	printf("\nNo. of Data Correct for temp1  %d / %d\n",correct,count);
+	printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
 
 }
 void cleanup(){

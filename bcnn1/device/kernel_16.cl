@@ -35,11 +35,11 @@ __kernel void Conv1(){
     LOOP_CONV1_3: for(i1 = 0; i1 < 3; i1++){
         LOOP_CONV1_2: for(j1 = 0; j1 < 3; j1++){
             LOOP_CONV1_1: for(k1 = 0; k1 < 3; k1++){
-                temp = fmap0[i1][hei1+j1][wid1+k1] * w1[fnum1][i1][j1][k1];
-                act1[fnum1][hei1][wid1] = act1[fnum1][hei1][wid1] + temp;
+               act1[fnum1][hei1][wid1] = (act1[fnum1][hei1][wid1] + (fmap0[i1][hei1+j1][wid1+k1] * w1[fnum1][i1][j1][k1]));
             }
         }
     }
+
     // Normalization and non-linearity
     if(act1[fnum1][hei1][wid1] > norm1[fnum1])
         fmap1[fnum1][hei1+1][wid1+1] = 1;
