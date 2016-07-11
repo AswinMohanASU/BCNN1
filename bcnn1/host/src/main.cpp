@@ -153,9 +153,9 @@ void run(){
 	err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
 	checkerror(err,"Error: Failed to execute kernel[1]");
 	// Execute the kernel over the entire range of our 1d input data set
-	global = {128,32,32};
-	err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
-	checkerror(err,"Error: Failed to execute kernel[0]");
+	//global = {128,32,32};
+	//err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
+	//checkerror(err,"Error: Failed to execute kernel[0]");
 
 	//err = clEnqueueNDRangeKernel(queue[0], kernel[1], 2, NULL, global, NULL, 0, NULL, NULL);
 	//checkerror(err,"Error: Failed to execute kernel[1]");		
@@ -170,10 +170,10 @@ void run(){
 	int count=0;
 	int flag=0;
 	for(unsigned char i = 0; i < 128; i++){
-		for(unsigned char j = 0; j < 32; j++){
-			for(unsigned char k = 0; k < 32; k++){
+		for(unsigned char j = 0; j < 34; j++){
+			for(unsigned char k = 0; k < 34; k++){
 				count++;
-				if(Y1[(j * 32) + k + (i * (32*32))] == act1[i][j][k])
+				if(X1[(j * 34) + k + (i * (34*34))] == 0)
 					correct++;
 				//if(act1[i][j][k] == Y1[(j * 18) + k + (i * (18*18))])
 				//	correct++;
