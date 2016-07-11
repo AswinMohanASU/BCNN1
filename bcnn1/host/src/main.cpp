@@ -170,10 +170,10 @@ void run(){
 	int count=0;
 	int flag=0;
 	for(unsigned char i = 0; i < 128; i++){
-		for(unsigned char j = 0; j < 34; j++){
-			for(unsigned char k = 0; k < 34; k++){
+		for(unsigned char j = 0; j < 32; j++){
+			for(unsigned char k = 0; k < 32; k++){
 				count++;
-				if(X1[(j * 34) + k + (i * (34*34))] == fmap1[i][j][k])
+				if(Y1[(j * 32) + k + (i * (32*32))] == act1[i][j][k])
 					correct++;
 				//if(act1[i][j][k] == Y1[(j * 18) + k + (i * (18*18))])
 				//	correct++;

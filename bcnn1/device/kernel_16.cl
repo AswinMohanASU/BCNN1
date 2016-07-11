@@ -29,6 +29,7 @@ __kernel void Conv1(__global bool *restrict x, __global int *restrict y){
     hei1 = get_global_id(1);
     wid1 = get_global_id(2);
     act1[fnum1][hei1][wid1]=0;
+
     LOOP_CONV1_3: for(i1 = 0; i1 < 3; i1++){
         LOOP_CONV1_2: for(j1 = 0; j1 < 3; j1++){
             LOOP_CONV1_1: for(k1 = 0; k1 < 3; k1++){
