@@ -1,4 +1,4 @@
-__global bool fmap1 [128][34][34];
+__global int fmap1 [128][34][34];
 
 // 1st layer
 __global int norm1[128]={-12,-3,90,-63,0,-2,-5,2,2,1,9,-91,44,-2,-57,8,-4,5,7,8,4,-4,5,1,-11,39,-2,-12,166,0,-24,-4,-3,0,7,11,1,5,-3,0,3,-6,-28,14,1,-27,130,2,-4,-66,-6,6,3,-8,60,-2,66,-9,-5,-11,-2,-5,-4,69,3,6,-24,6,-3,-8,-8,0,0,1,-4,5,-8,4,-9,17,59,-2,5,43,0,-1,85,10,-15,21,40,5,46,-4,32,-4,-26,0,4,2,4,45,3,2,6,0,3,-4,-2,7,4,6,0,-3,-3,-124,6,-5,10,2,-4,0,-63,73,-4,0,-5,155};
@@ -13,23 +13,24 @@ __kernel void intialize(){
 		   int fnum1 = get_global_id(0);
            int hei1 = get_global_id(1);
            int wid1 = get_global_id(2);
-
-		    fmap1[fnum1][hei1][wid1]=0;
-
-
+	
+		   fmap1[fnum1][hei1][wid1]= 0;
+	
 }
 
-__kernel void Conv1(__global bool *restrict x, __global int *restrict y){
+__kernel void Conv1(){
 
 	int fnum1, hei1, wid1;
 	int i1, j1, k1;
 
 	int temp;
 
-    fnum1 = get_global_id(0);
-    hei1 = get_global_id(1);
-    wid1 = get_global_id(2);
-    act1[fnum1][hei1][wid1]=0;
+		   fnum1 = get_global_id(0);
+           hei1 = get_global_id(1);
+           wid1 = get_global_id(2);
+    	   
+    	   act1[fnum1][hei1][wid1]=0;
+
 
     LOOP_CONV1_3: for(i1 = 0; i1 < 3; i1++){
         LOOP_CONV1_2: for(j1 = 0; j1 < 3; j1++){
@@ -45,10 +46,18 @@ __kernel void Conv1(__global bool *restrict x, __global int *restrict y){
     else
         fmap1[fnum1][hei1+1][wid1+1] = 0;
 
-	x[(hei1 * 34) + wid1 + (fnum1 * (34*34))]=fmap1[fnum1][hei1][wid1];
-
-	y[(hei1 * 32) + wid1 + (fnum1 * (32*32))]=act1[fnum1][hei1][wid1];
-
 
 }
 
+__kernel void returndata(__global int *restrict x, __global int *restrict y){
+
+		   int fnum1 = get_global_id(0);
+           int hei1 = get_global_id(1);
+           int wid1 = get_global_id(2);
+	
+x[(wid1 + (hei1 * 34) + (fnum1 * (34 * 34)))]=fmap1[fnum1][hei1][wid1];
+
+if(hei1 < 32 && wid1 < 32)
+	y[(wid1 + (hei1 * 32) + (fnum1 * (32 * 32)))]=act1[fnum1][hei1][wid1];
+
+}
