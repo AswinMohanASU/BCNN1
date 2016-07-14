@@ -58,7 +58,7 @@ int main(void){
     }
 
     run();
-    FMAP0 = fmap_data;
+    FMAP0 = (int*)fmap_data;
     cleanup();
     return 0;
 }
