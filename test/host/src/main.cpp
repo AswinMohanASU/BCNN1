@@ -58,7 +58,9 @@ int main(void){
     }
 
     run();
-    FMAP0 = (int*)fmap_data;
+    for(int i=0; i < 3 * 34 * 34 ; i ++){
+        FMAP0[i]=fmap_data[i];
+    }
     cleanup();
     return 0;
 }
