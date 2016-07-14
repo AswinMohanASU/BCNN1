@@ -53,13 +53,13 @@ if(fnum1 < 3)
 
 }
 
-__kernel void returndata(__global int *restrict y){
+__kernel void returndata(__global int *restrict y, __global int *restrict z){
 
 		   int fnum1 = get_global_id(0);
            int hei1 = get_global_id(1);
            int wid1 = get_global_id(2);
-
-//if (wid1 < 34 && hei1 < 34)
-	y[(wid1 + (hei1 * 34) + (fnum1 * (34 * 34)))]= fmap1[fnum1][hei1][wid1];
+y[(wid1 + (hei1 * 34) + (fnum1 * (34 * 34)))]= fmap1[fnum1][hei1][wid1];
+if (wid1 < 34 && hei1 < 34)
+	z[(wid1 + (hei1 * 34) + (fnum1 * (34 * 34)))]= temp[fnum1][hei1][wid1];
 
 }
