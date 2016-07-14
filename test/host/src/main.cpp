@@ -60,6 +60,7 @@ int main(void){
     run();
     for(int i=0; i < 3 * 34 * 34 ; i ++){
         FMAP0[i]=fmap_data[i];
+        printf("%d \t",FMAP0[i]);
     }
     cleanup();
     return 0;
