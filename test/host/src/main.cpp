@@ -178,6 +178,6 @@ void cleanup(){
     clReleaseCommandQueue(queue[0]);
     clReleaseContext(context);
     free(X1);
-    free(FMAP0);
+    //free(FMAP0);
 
 }
