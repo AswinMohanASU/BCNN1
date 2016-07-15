@@ -34,7 +34,7 @@ cl_mem d_debug;
 
 size_t global[3];                       // global domain size for our calculation
 size_t local[3];                       	// local domain size for our calculation
-
+size_t offset[3];                       	// offset size for our calculation
 cl_platform_id platform;                // compute platform id
 cl_device_id device;                	// compute device id
 cl_context context;                 	// compute context
@@ -171,7 +171,11 @@ void run(){
 
     global = {10, 32, 32};
     //local = {1,32,32};
-    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
+
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, &global, NULL, 0, NULL, NULL);
+    checkerror(err,"Error: Failed to execute kernel[0]");
+    offset = {10, 0, 0};
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, &offset, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
 
     clFinish(queue[0]);
