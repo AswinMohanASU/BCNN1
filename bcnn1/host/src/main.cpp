@@ -163,7 +163,7 @@ void run(){
 
     printf("Complete setting arguments \n");
 
-    global = {1, 1, 5};
+    global = {1, 1, 2};
     local = {1,1,1};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, local, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
@@ -173,6 +173,7 @@ void run(){
     err = clEnqueueReadBuffer( queue[0] , d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL );
     checkerror(err,"Error: Failed to read kernel arguments! - kernel[0] - d_act1");
 
+
     printf("Complete \n");
 
     correct=0;
@@ -181,7 +182,7 @@ void run(){
 
     for(unsigned char i = 0; i < 1; i++){
         for(unsigned char j = 0; j < 1; j++){
-            for(unsigned char k = 0; k < 1; k++){
+            for(unsigned char k = 0; k < 5; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
