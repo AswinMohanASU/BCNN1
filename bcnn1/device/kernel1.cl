@@ -40,6 +40,6 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
                 else
                     fmap1[fnum1][hei1+1][wid1+1] = 0;
 
-
+    }
 }
 
