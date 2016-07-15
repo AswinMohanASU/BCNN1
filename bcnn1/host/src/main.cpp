@@ -136,7 +136,7 @@ int initialize(){
 
 void run(){
 
-    h_debug = {0,32,32};
+    h_debug = {0,0,32};
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -187,7 +187,7 @@ void run(){
     int flag=0;
 
     for(unsigned char i = 0; i < 1; i++){
-        for(unsigned char j = 0; j < 32; j++){
+        for(unsigned char j = 0; j < 1; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
