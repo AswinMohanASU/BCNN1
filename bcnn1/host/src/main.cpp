@@ -178,9 +178,9 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
-        for(unsigned char j = 0; j < 32; j++){
-            for(unsigned char k = 0; k < 32; k++){
+    for(unsigned char i = 0; i < 1; i++){
+        for(unsigned char j = 0; j < 5; j++){
+            for(unsigned char k = 0; k < 5; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
@@ -189,7 +189,7 @@ void run(){
                     correct++;
                 }
                 else{
-                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     flag++;
                 }
             }
