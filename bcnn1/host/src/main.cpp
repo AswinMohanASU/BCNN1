@@ -29,7 +29,7 @@ cl_uint numPlatforms;
 
 //cl_mem x;                  				// device memory used for the input array
 cl_mem d_fmap0,d_norm1,d_w1,d_fmap1,d_act1;
-
+cl_mem d_debug;
 //int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
 
 size_t global[3];                       // global domain size for our calculation
@@ -57,7 +57,7 @@ int  w1[128][3][3][3]={-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,
 
 int h_fmap1[128 * 34 * 34];
 int h_act1[128 * 32 * 32];
-
+int h_debug[3];
 void cleanup();
 int initialize();
 void run();
@@ -129,13 +129,14 @@ int initialize(){
     d_norm1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
-
+    d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3, NULL, NULL);
     printf("Complete creating arguments \n");
     return 0;
 }
 
 void run(){
 
+    h_debug = {1,1,1};
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -146,6 +147,9 @@ void run(){
 
     err = clEnqueueWriteBuffer(queue[0], d_norm1, CL_FALSE, 0, sizeof(int) * 128 , h_norm1, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
+
+    err = clEnqueueWriteBuffer(queue[0], d_debug, CL_FALSE, 0, sizeof(int) * 3 , h_debug, 0, NULL, NULL);
+    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
 
     // Set the arguments to our compute kernel
     //
@@ -161,6 +165,8 @@ void run(){
     err = clSetKernelArg(kernel[0],3, sizeof(cl_mem), &d_act1);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_act1");
 
+    err = clSetKernelArg(kernel[0],4, sizeof(cl_mem), &d_debug);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
     printf("Complete setting arguments \n");
 
     global = {128, 32, 32};

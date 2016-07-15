@@ -3,7 +3,8 @@ __global int fmap1[128][34][34];
 __kernel void conv( __global int *restrict d_fmap0,
 __global int *restrict d_w1,
 __global int *restrict d_norm1,
-__global int *restrict d_act1
+__global int *restrict d_act1,
+__global int *restrict d_debug
 ){
 
 	int fnum1, hei1, wid1;
@@ -27,7 +28,8 @@ __global int *restrict d_act1
 
                 d_act1[index] = d_act1[index] + temp;
 
-                printf("Index [%d][%d][%d] --> fmap=%d w=%d d_fmap0[fmap]=%d d_w1[w]=%d  temp=%d  d_act1[%d]= %d\n",i1,j1,k1,fmap,w,d_fmap0[fmap],d_w1[w],temp,index,d_act1[index]);
+                if(fnum1 == d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2])
+                    printf("Index [%d][%d][%d] --> fmap=%d w=%d d_fmap0[fmap]=%d d_w1[w]=%d  temp=%d  d_act1[%d]= %d\n",i1,j1,k1,fmap,w,d_fmap0[fmap],d_w1[w],temp,index,d_act1[index]);
 
             }
         }
