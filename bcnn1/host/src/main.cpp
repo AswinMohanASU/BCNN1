@@ -169,9 +169,9 @@ void run(){
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
     printf("Complete setting arguments \n");
 
-    global = {1, 32, 32};
-    local = {1,32,32};
-    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, local, 0, NULL, NULL);
+    global = {10, 32, 32};
+    //local = {1,32,32};
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
 
     clFinish(queue[0]);
@@ -186,7 +186,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 1; i++){
+    for(unsigned char i = 0; i < 10; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
