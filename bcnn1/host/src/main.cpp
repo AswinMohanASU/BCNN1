@@ -121,8 +121,9 @@ int initialize(){
     //
     kernel[0] = clCreateKernel(program, "conv", &err);
     checkerror(err,"Error: Failed to create compute kernel[0]!");
+
     kernel[1] = clCreateKernel(program, "conv", &err);
-    checkerror(err,"Error: Failed to create compute kernel[0]!");
+    checkerror(err,"Error: Failed to create compute kernel[1]!");
 
     // Create the input and output arrays in device memory for our calculation
     //
@@ -194,7 +195,7 @@ void run(){
     checkerror(err,"Error: Failed to execute kernel[0]");
 
     offset = {10, 0, 0};
-    err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, offset, global, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
