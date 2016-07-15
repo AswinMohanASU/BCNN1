@@ -93,7 +93,7 @@ int initialize(){
     queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkerror(err,"Error: Failed to create a command queue[0]!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_b2", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -169,7 +169,7 @@ void run(){
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
     printf("Complete setting arguments \n");
 
-    global = {30, 32, 32};
+    global = {20, 32, 32};
     local = {1,32,32};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, local, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
