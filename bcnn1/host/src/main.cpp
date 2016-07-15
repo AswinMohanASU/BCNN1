@@ -93,7 +93,7 @@ int initialize(){
     queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkerror(err,"Error: Failed to create a command queue[0]!");
 
-    string binary_file = getBoardBinaryFile("kernel_e2", device);
+    string binary_file = getBoardBinaryFile("kernel_e3", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -185,7 +185,7 @@ void run(){
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
                 if(act1[i][j][k] == h_act1[ k + (j * 32) + (i * (32*32))]){
-                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
                 else{
