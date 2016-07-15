@@ -136,7 +136,7 @@ int initialize(){
 
 void run(){
 
-    h_debug = {1,1,1};
+    h_debug = {128,1,1};
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
