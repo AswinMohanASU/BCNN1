@@ -27,7 +27,7 @@ __global int *restrict d_act1
 
                 d_act1[index] = d_act1[index] + temp;
 
-                printf("Index [%d][%d][%d] --> fmap=%d w=%d  temp=%d  d_act1[%d]= %d\n",i1,j1,k1,fmap,w,temp,index,d_act1[index]);
+                printf("Index [%d][%d][%d] --> fmap=%d w=%d d_fmap0[fmap]=%d d_w1[w]=%d  temp=%d  d_act1[%d]= %d\n",i1,j1,k1,fmap,w,d_fmap0[fmap],d_w1[w],temp,index,d_act1[index]);
 
             }
         }
