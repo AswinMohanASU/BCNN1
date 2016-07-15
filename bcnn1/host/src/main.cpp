@@ -203,7 +203,7 @@ void run(){
             }
         }
         if(flag > 0)
-            printf("Matrix %d - %d\n",i,flag);
+            printf("Matrix %d %d %d - %d\n",i,j,k,flag);
         flag=0;
     }
 
