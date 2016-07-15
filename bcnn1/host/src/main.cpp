@@ -163,7 +163,7 @@ void run(){
 
     printf("Complete setting arguments \n");
 
-    global = {5, 32, 32};
+    global = {128, 32, 32};
     local = {1,1,1};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, local, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
@@ -180,7 +180,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 5; i++){
+    for(unsigned char i = 0; i < 128; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
