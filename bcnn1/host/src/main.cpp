@@ -164,7 +164,7 @@ void run(){
     printf("Complete setting arguments \n");
 
     global = {128, 32, 32};
-    local = {1,32,32};
+    local = {1,1,1};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, local, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
 
