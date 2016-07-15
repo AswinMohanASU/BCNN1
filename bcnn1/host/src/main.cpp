@@ -194,8 +194,9 @@ void run(){
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
 
+    global = {20, 32, 32};
     offset = {10, 0, 0};
-    err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, offset, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
