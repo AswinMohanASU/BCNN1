@@ -186,7 +186,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
+    for(unsigned char i = 0; i < 1; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
@@ -200,10 +200,13 @@ void run(){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     flag++;
                 }
+
+                if(flag > 0)
+                    printf("Matrix %d %d %d - %d\n",i,j,k,flag);
             }
         }
         if(flag > 0)
-            printf("Matrix %d %d %d - %d\n",i,j,k,flag);
+            printf("Matrix %d  - %d\n",i,flag);
         flag=0;
     }
 
