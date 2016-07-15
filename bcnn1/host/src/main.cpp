@@ -172,10 +172,10 @@ void run(){
     global = {10, 32, 32};
     //local = {1,32,32};
 
-    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, &global, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
     offset = {10, 0, 0};
-    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, &offset, global, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, offset, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
 
     clFinish(queue[0]);
