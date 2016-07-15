@@ -186,7 +186,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 50; i++){
+    for(unsigned char i = 0; i < 20; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
