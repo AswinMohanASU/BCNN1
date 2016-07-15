@@ -93,7 +93,7 @@ int initialize(){
     queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkerror(err,"Error: Failed to create a command queue[0]!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_e1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
