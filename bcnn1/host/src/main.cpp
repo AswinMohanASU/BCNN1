@@ -169,7 +169,7 @@ void run(){
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
     printf("Complete setting arguments \n");
 
-    global = {128, 32, 32};
+    global = {1, 1, 32};
     local = {1,1,1};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, local, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
