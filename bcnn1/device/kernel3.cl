@@ -9,7 +9,7 @@ __global int *restrict d_act1
 	int fnum1, hei1, wid1;
 	int i1, j1, k1, temp;
 
-     for(fnum1=0 ; fnum1 < 128 ; fnum++){
+     for(fnum1=0 ; fnum1 < 128 ; fnum1++){
          for(hei1=0 ; hei1 < 32; hei1++){
             for(wid1=0 ; wid1 < 32; wid1++){
 
