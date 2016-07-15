@@ -122,9 +122,6 @@ int initialize(){
     kernel[0] = clCreateKernel(program, "conv", &err);
     checkerror(err,"Error: Failed to create compute kernel[0]!");
 
-    kernel[1] = clCreateKernel(program, "conv", &err);
-    checkerror(err,"Error: Failed to create compute kernel[1]!");
-
     // Create the input and output arrays in device memory for our calculation
     //
     d_fmap0 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
@@ -139,7 +136,7 @@ int initialize(){
 
 void run(){
 
-    h_debug = {0,1,32};
+    h_debug = {128,32,32};
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -172,32 +169,12 @@ void run(){
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
     printf("Complete setting arguments \n");
 
-    err = clSetKernelArg(kernel[1],0, sizeof(cl_mem), &d_fmap0);
-    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_fmap0");
-
-    err = clSetKernelArg(kernel[1],1, sizeof(cl_mem), &d_w1);
-    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_w1");
-
-    err = clSetKernelArg(kernel[1],2, sizeof(cl_mem), &d_norm1);
-    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_norm1");
-
-    err = clSetKernelArg(kernel[1],3, sizeof(cl_mem), &d_act1);
-    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_act1");
-
-    err = clSetKernelArg(kernel[1],4, sizeof(cl_mem), &d_debug);
-    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_debug");
-    printf("Complete setting arguments \n");
 
     global = {10, 32, 32};
     //local = {1,32,32};
 
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
-
-    global = {20, 32, 32};
-    offset = {10, 0, 0};
-    err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, offset, global, NULL, 0, NULL, NULL);
-    checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
 
