@@ -144,7 +144,7 @@ void run(){
     err = clEnqueueWriteBuffer(queue[0], d_w1, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
 
-    err = clEnqueueWriteBuffer(queue[0], d_w1, CL_FALSE, 0, sizeof(int) * 128 , h_norm1, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(queue[0], d_norm1, CL_FALSE, 0, sizeof(int) * 128 , h_norm1, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
 
     // Set the arguments to our compute kernel
@@ -156,7 +156,7 @@ void run(){
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_w1");
 
     err = clSetKernelArg(kernel[0],2, sizeof(cl_mem), &d_norm1);
-    checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_w1");
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_norm1");
 
     err = clSetKernelArg(kernel[0],3, sizeof(cl_mem), &d_act1);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_act1");
