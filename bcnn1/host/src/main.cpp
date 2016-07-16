@@ -58,6 +58,7 @@ int  w1[128][3][3][3]={-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,
 int h_fmap1[128 * 34 * 34];
 int h_act1[128 * 32 * 32];
 int h_debug[3];
+int h_offset;
 void cleanup();
 int initialize();
 void run();
@@ -170,7 +171,7 @@ void run(){
     printf("Complete setting arguments \n");
 
 
-    global = {128, 32, 32};
+    global = {16, 32, 32};
     //local = {1,32,32};
 
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
@@ -188,7 +189,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
+    for(unsigned char i = 0; i < 16; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
