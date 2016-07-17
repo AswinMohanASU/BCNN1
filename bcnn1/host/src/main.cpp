@@ -187,7 +187,7 @@ int main(void){
             checkError(err, "Error: Failed to execute kernel[0]");
         }
 
-        if(i <= 2 - 1) {
+        if(i <= 16 - 1) {
             clWaitForEvents(i+1, event_kernel);
 
 
