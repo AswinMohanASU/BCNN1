@@ -75,11 +75,11 @@ int main(void){
     //Get DeviceID
     //
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL);
-    checkerror(err,"Error: Failed to get DeviceID!");
+    checkError(err,"Error: Failed to get DeviceID!");
     // Create a compute context
     //
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-    checkerror(err,"Error: Failed to Create context!");
+    checkError(err,"Error: Failed to Create context!");
 
     string binary_file = getBoardBinaryFile("kernel_b1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
@@ -124,67 +124,67 @@ int main(void){
         // Create a command queue
         //
         queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkerror(err, "Error: Failed to create a command queue[%d]!,i");
+        checkError(err, "Error: Failed to create a command queue[%d]!,i");
 
         d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
 
         // Create the compute kernel in the program we wish to run
         //
         kernel[i] = clCreateKernel(program, "conv", &err);
-        checkerror(err, "Error: Failed to create compute kernel[%d]!",i);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",i);
 
         if(i > 0) {
             h_offset[i] = h_offset[i] + 8;
             err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
-            checkerror(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%d]",i);
+            checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%d]",i);
         }
         else {
         // Write our data set into the input array in device memory
         //
         err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-        checkerror(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
 
         err = clEnqueueWriteBuffer(queue[0], d_w1, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-        checkerror(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
 
         err = clEnqueueWriteBuffer(queue[0], d_norm1, CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
-        checkerror(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
 
         err = clEnqueueWriteBuffer(queue[0], d_debug, CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
-        checkerror(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
 
         err = clEnqueueWriteBuffer(queue[0], d_offset[0], CL_FALSE, 0, sizeof(int), &h_offset[0], 0, NULL, NULL);
-        checkerror(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%]",i);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%]",i);
         }
 
 
         // Set the arguments to our compute kernel
         //
         err = clSetKernelArg(kernel[i], 0, sizeof(cl_mem), &d_fmap0);
-        checkerror(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap0",i);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap0",i);
 
         err = clSetKernelArg(kernel[i], 1, sizeof(cl_mem), &d_w1);
-        checkerror(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w1",i);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w1",i);
 
         err = clSetKernelArg(kernel[i], 2, sizeof(cl_mem), &d_norm1);
-        checkerror(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",i);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",i);
 
         err = clSetKernelArg(kernel[i], 3, sizeof(cl_mem), &d_act1);
-        checkerror(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
 
         err = clSetKernelArg(kernel[i], 4, sizeof(cl_mem), &d_debug);
-        checkerror(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_debug",i);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_debug",i);
 
         err = clSetKernelArg(kernel[i], 5, sizeof(cl_mem), &d_offset[i]);
-        checkerror(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
         if(i > 0){
             err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 1, &event_kernel[i-1], &event_kernel[i]);
-            checkerror(err, "Error: Failed to execute kernel[i]",i);
+            checkError(err, "Error: Failed to execute kernel[i]",i);
         }
         else{
             err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel[i]);
-            checkerror(err, "Error: Failed to execute kernel[0]");
+            checkError(err, "Error: Failed to execute kernel[0]");
         }
 
         if(i <= 2 - 1) {
@@ -192,7 +192,7 @@ int main(void){
 
 
             err = clEnqueueReadBuffer(queue[i], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
-            checkerror(err, "Error: Failed to read kernel arguments! - kernel[1] - d_act1");
+            checkError(err, "Error: Failed to read kernel arguments! - kernel[1] - d_act1");
         }
     }
     printf("Complete \n");
