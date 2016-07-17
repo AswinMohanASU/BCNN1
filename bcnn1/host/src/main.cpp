@@ -120,7 +120,7 @@ int main(void){
 
     global = {32, 32, 8};
 
-    for(int i=0; i < 16 ; i ++ ) {
+    for(int i=0; i < 5 ; i ++ ) {
         // Create a command queue
         //
         queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
@@ -179,7 +179,8 @@ int main(void){
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
         if(i > 0){
-            err = clEnqueueNDRangeKernel(queue[0], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
+            clFinish(queue[i-1]);
+            err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[i]",i);
         }
         else{
@@ -187,11 +188,11 @@ int main(void){
             checkError(err, "Error: Failed to execute kernel[0]");
         }
 
-        if(i <= 16 - 1) {
-            clFinish(queue[0]);
+        if(i <= 5 - 1) {
+            clFinish(queue[i]);
 
 
-            err = clEnqueueReadBuffer(queue[0], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
+            err = clEnqueueReadBuffer(queue[i], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
             checkError(err, "Error: Failed to read kernel arguments! - kernel[1] - d_act1");
         }
     }
@@ -201,7 +202,7 @@ int main(void){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
+    for(unsigned char i = 0; i < 40; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
