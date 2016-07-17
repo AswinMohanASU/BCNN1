@@ -214,12 +214,12 @@ void run(){
 
     cl_event event_kernel_0,event_kernel_1;
 
-    global = {32, 32, 8};
+    global = {32, 32, 1};
     //local = {1,32,32};
 
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel_0);
     checkerror(err,"Error: Failed to execute kernel[0]");
-    global = {32, 32, 8};
+    global = {32, 32, 1};
     err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, &event_kernel_1);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
