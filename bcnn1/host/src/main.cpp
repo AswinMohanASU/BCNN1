@@ -135,7 +135,7 @@ int main(void){
 
         if(i > 0) {
             h_offset[i] = h_offset[i] + 8;
-            err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
+            err = clEnqueueWriteBuffer(queue[0], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
             checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%d]",i);
         }
         else {
@@ -179,11 +179,11 @@ int main(void){
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
         if(i > 0){
-            err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 1, &event_kernel[i-1], &event_kernel[i]);
+            err = clEnqueueNDRangeKernel(queue[0], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[i]",i);
         }
         else{
-            err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel[i]);
+            err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[0]");
         }
 
