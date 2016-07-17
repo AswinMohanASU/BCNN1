@@ -134,7 +134,7 @@ int main(void){
         checkError(err, "Error: Failed to create compute kernel[%d]!",i);
 
         if(i > 0) {
-            h_offset[i] = h_offset[i] + 8;
+            h_offset[i] = h_offset[i] + 1;
             err = clEnqueueWriteBuffer(queue[0], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
             checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%d]",i);
         }
@@ -154,7 +154,7 @@ int main(void){
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
 
         err = clEnqueueWriteBuffer(queue[0], d_offset[0], CL_FALSE, 0, sizeof(int), &h_offset[0], 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%]",i);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%d]",i);
         }
 
 
@@ -188,7 +188,7 @@ int main(void){
             checkError(err, "Error: Failed to execute kernel[0]");
         }
 
-        if(i <= 5 - 1) {
+        if(i <= 2 - 1) {
             clFinish(queue[i]);
 
 
@@ -202,7 +202,7 @@ int main(void){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 40; i++){
+    for(unsigned char i = 0; i < 16; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
