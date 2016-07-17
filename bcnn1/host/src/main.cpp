@@ -34,7 +34,7 @@ cl_mem d_debug;
 
 size_t global[3];                       // global domain size for our calculation
 size_t local[3];                       	// local domain size for our calculation
-size_t offset[4];                       	// offset size for our calculation
+size_t offset[3];                       	// offset size for our calculation
 cl_platform_id platform;                // compute platform id
 cl_device_id device;                	// compute device id
 cl_context context;                 	// compute context
@@ -57,7 +57,7 @@ int  w1[128][3][3][3]={-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,
 
 int h_fmap1[128 * 34 * 34];
 int h_act1[128 * 32 * 32];
-int h_debug[3];
+int h_debug[4];
 int h_offset;
 void cleanup();
 int initialize();
