@@ -188,7 +188,7 @@ int main(void){
         }
 
         if(i <= 2 - 1) {
-            clWaitForEvents(num_devices, event_kernel);
+            clWaitForEvents(i+1, event_kernel);
 
 
             err = clEnqueueReadBuffer(queue[i], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
