@@ -29,12 +29,12 @@ cl_uint numPlatforms;
 
 //cl_mem x;                  				// device memory used for the input array
 cl_mem d_fmap0,d_norm1,d_w1,d_fmap1,d_act1;
-cl_mem d_debug,d_offset_0,d_offset_1;
+cl_mem d_debug,d_offset_0,d_offset_1,d_offset;
 //int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
 
 size_t global[3];                       // global domain size for our calculation
 size_t local[3];                       	// local domain size for our calculation
-size_t offset[3];                       	// offset size for our calculation
+
 cl_platform_id platform;                // compute platform id
 cl_device_id device;                	// compute device id
 cl_context context;                 	// compute context
@@ -60,6 +60,7 @@ int h_act1[128 * 32 * 32];
 int h_debug[3];
 int h_offset_0;
 int h_offset_1;
+int h_offset[3];
 void cleanup();
 int initialize();
 void run();
@@ -139,6 +140,7 @@ int initialize(){
     d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 4, NULL, NULL);
     d_offset_0 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
     d_offset_1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
+    d_offset = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
     printf("Complete creating arguments \n");
     return 0;
 }
@@ -148,6 +150,8 @@ void run(){
     h_debug = {128,32,32};
     h_offset_0 = 0;
     h_offset_1 = 8;
+    h_offset[0]=0;
+    h_offset[1]=0;
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -168,6 +172,9 @@ void run(){
     err = clEnqueueWriteBuffer(queue[0], d_offset_1, CL_FALSE, 0, sizeof(int), &h_offset_1, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset_1");
 
+    err = clEnqueueWriteBuffer(queue[0], d_offset, CL_FALSE, 0, sizeof(int), &h_offset, 0, NULL, NULL);
+    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset");
+
     // Set the arguments to our compute kernel
     //
     err = clSetKernelArg(kernel[0],0, sizeof(cl_mem), &d_fmap0);
@@ -185,7 +192,7 @@ void run(){
     err = clSetKernelArg(kernel[0],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
 
-    err = clSetKernelArg(kernel[0],5, sizeof(cl_mem), &d_offset_0);
+    err = clSetKernelArg(kernel[0],5, sizeof(cl_mem), &d_offset++);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_offset");
 
     err = clSetKernelArg(kernel[1],0, sizeof(cl_mem), &d_fmap0);
@@ -203,7 +210,7 @@ void run(){
     err = clSetKernelArg(kernel[1],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_debug");
 
-    err = clSetKernelArg(kernel[1],5, sizeof(cl_mem), &d_offset_1);
+    err = clSetKernelArg(kernel[1],5, sizeof(cl_mem), &d_offset++);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_offset");
 
     printf("Complete setting arguments \n");
