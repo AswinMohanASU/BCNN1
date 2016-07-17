@@ -214,7 +214,7 @@ void run(){
 
     cl_event event_kernel_0,event_kernel_1;
 
-    global = {32, 32, 1};
+    global = {32, 32, 8};
     //local = {1,32,32};
 
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
