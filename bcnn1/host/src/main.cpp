@@ -119,8 +119,14 @@ int main(void){
     cl_event event_kernel[16];
 
     global = {32, 32, 8};
+     h_offset[0] = 0;
+    // h_offset[1] = 8;
+    // h_offset[2] = 16;
+    // h_offset[3] = 24;
+    // h_offset[4] = 32;
 
-    for(int i=0; i < 2 ; i ++ ) {
+
+    for(int i=0; i < 16 ; i ++ ) {
         // Create a command queue
         //
         queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
@@ -134,7 +140,7 @@ int main(void){
         checkError(err, "Error: Failed to create compute kernel[%d]!",i);
 
         if(i > 0) {
-            h_offset[i] = h_offset[i] + 1;
+            h_offset[i] = h_offset[i-1] + 8;
             err = clEnqueueWriteBuffer(queue[0], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
             checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[%d]",i);
         }
@@ -179,7 +185,7 @@ int main(void){
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
         if(i > 0){
-            clFinish(queue[i-1]);
+            //clFinish(queue[i-1]);
             err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[i]",i);
         }
@@ -188,7 +194,7 @@ int main(void){
             checkError(err, "Error: Failed to execute kernel[0]");
         }
 
-        if(i <= 2 - 1) {
+        if(i <= 16 - 1) {
             clFinish(queue[i]);
 
 
@@ -202,9 +208,9 @@ int main(void){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 16; i++){
-        for(unsigned char j = 0; j < 32; j++){
-            for(unsigned char k = 0; k < 32; k++){
+    for(unsigned char i = 16; i < 17; i++){
+        for(unsigned char j = 0; j < 5; j++){
+            for(unsigned char k = 0; k < 5; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
@@ -213,7 +219,7 @@ int main(void){
                     correct++;
                 }
                 else{
-                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     flag++;
                 }
 
