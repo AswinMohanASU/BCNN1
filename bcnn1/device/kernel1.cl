@@ -8,7 +8,7 @@ __global int *restrict d_w1,
 __global int *restrict d_norm1,
 __global int *restrict d_act1,
 __global int *restrict d_debug,
-const int *restrict d_offset
+const int d_offset
 ){
 
 	int fnum1, hei1, wid1;
