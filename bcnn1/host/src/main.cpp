@@ -96,6 +96,7 @@ int initialize(){
     //
     queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkerror(err,"Error: Failed to create a command queue[0]!");
+
     queue[1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkerror(err,"Error: Failed to create a command queue[1]!");
 
@@ -171,24 +172,6 @@ void run(){
     err = clEnqueueWriteBuffer(queue[0], d_offset[1], CL_FALSE, 0, sizeof(int), &h_offset[1], 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset_1");
 
-    err = clEnqueueWriteBuffer(queue[1], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
-
-    err = clEnqueueWriteBuffer(queue[1], d_w1, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
-
-    err = clEnqueueWriteBuffer(queue[1], d_norm1, CL_FALSE, 0, sizeof(int) * 128 , h_norm1, 0, NULL, NULL);
-    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
-
-    err = clEnqueueWriteBuffer(queue[1], d_debug, CL_FALSE, 0, sizeof(int) * 3 , h_debug, 0, NULL, NULL);
-    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
-
-    err = clEnqueueWriteBuffer(queue[1], d_offset[0], CL_FALSE, 0, sizeof(int), &h_offset[0], 0, NULL, NULL);
-    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset_0");
-
-    err = clEnqueueWriteBuffer(queue[1], d_offset[1], CL_FALSE, 0, sizeof(int), &h_offset[1], 0, NULL, NULL);
-    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset_1");
-
 
     // Set the arguments to our compute kernel
     //
@@ -230,15 +213,15 @@ void run(){
 
     printf("Complete setting arguments \n");
 
-    cl_event event_kernel_0;
+    cl_event event_kernel_0,event_kernel_1;
 
     global = {32, 32, 8};
     //local = {1,32,32};
 
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel_0);
     checkerror(err,"Error: Failed to execute kernel[0]");
-
-    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, &event_kernel_0, NULL);
+    global = {32, 32, 1};
+    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, &event_kernel_0, &event_kernel_1);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
@@ -253,7 +236,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 16; i++){
+    for(unsigned char i = 0; i < 9; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
