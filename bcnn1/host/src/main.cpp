@@ -188,7 +188,7 @@ int main(void){
         }
 
         if(i <= 16 - 1) {
-            clWaitForEvents(i+1, event_kernel);
+            clFinish(queue[i]);
 
 
             err = clEnqueueReadBuffer(queue[i], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
