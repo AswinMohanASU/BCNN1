@@ -188,10 +188,10 @@ int main(void){
         }
 
         if(i <= 16 - 1) {
-            clFinish(queue[i]);
+            clFinish(queue[0]);
 
 
-            err = clEnqueueReadBuffer(queue[i], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
+            err = clEnqueueReadBuffer(queue[0], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
             checkError(err, "Error: Failed to read kernel arguments! - kernel[1] - d_act1");
         }
     }
