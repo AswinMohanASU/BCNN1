@@ -221,12 +221,11 @@ void run(){
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel_0);
     checkerror(err,"Error: Failed to execute kernel[0]");
     global = {32, 32, 1};
-    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, &event_kernel_0, &event_kernel_1);
+    err = clEnqueueNDRangeKernel(queue[0], kernel[1], 3, NULL, global, NULL, 0, &event_kernel_0, &event_kernel_1);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
-    clFinish(queue[1]);
-    err = clEnqueueReadBuffer( queue[1] , d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL );
+    err = clEnqueueReadBuffer( queue[0] , d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL );
     checkerror(err,"Error: Failed to read kernel arguments! - kernel[1] - d_act1");
 
 
