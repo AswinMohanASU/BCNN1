@@ -59,9 +59,8 @@ int  w1[128][3][3][3]={-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,
 int h_fmap1[128 * 34 * 34];
 int h_act1[128 * 32 * 32];
 int h_debug[3];
-int h_offset_0;
-int h_offset_1;
-int h_offset[3];
+
+int h_offset[16];
 void cleanup();
 int initialize();
 void run();
@@ -221,7 +220,7 @@ void run(){
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel_0);
     checkerror(err,"Error: Failed to execute kernel[0]");
     global = {32, 32, 8};
-    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 1, &event_kernel_0, &event_kernel_1);
+    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, &event_kernel_1);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
