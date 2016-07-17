@@ -120,7 +120,7 @@ int main(void){
 
     global = {32, 32, 8};
 
-    for(int i=0; i < 2 ; i ++ ) {
+    for(int i=0; i < 16 ; i ++ ) {
         // Create a command queue
         //
         queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
@@ -201,7 +201,7 @@ int main(void){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 16; i++){
+    for(unsigned char i = 0; i < 128; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
