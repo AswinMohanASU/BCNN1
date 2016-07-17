@@ -141,7 +141,6 @@ int initialize(){
     d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 4, NULL, NULL);
     d_offset[1] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
     d_offset[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
-    printf("Complete creating arguments \n");
     return 0;
 }
 
@@ -209,8 +208,6 @@ void run(){
 
     err = clSetKernelArg(kernel[1],5, sizeof(cl_mem), &d_offset[1]);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_offset");
-
-    printf("Complete setting arguments \n");
 
     cl_event event_kernel_0,event_kernel_1;
 
