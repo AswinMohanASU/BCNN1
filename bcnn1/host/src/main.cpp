@@ -151,7 +151,7 @@ void run(){
     h_offset_0 = 0;
     h_offset_1 = 8;
     h_offset[0]=0;
-    h_offset[1]=0;
+    h_offset[1]=8;
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -192,7 +192,7 @@ void run(){
     err = clSetKernelArg(kernel[0],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
 
-    err = clSetKernelArg(kernel[0],5, sizeof(cl_mem), &d_offset++);
+    err = clSetKernelArg(kernel[0],5, sizeof(cl_mem), &d_offset);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_offset");
 
     err = clSetKernelArg(kernel[1],0, sizeof(cl_mem), &d_fmap0);
@@ -210,7 +210,7 @@ void run(){
     err = clSetKernelArg(kernel[1],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_debug");
 
-    err = clSetKernelArg(kernel[1],5, sizeof(cl_mem), &d_offset++);
+    err = clSetKernelArg(kernel[1],5, sizeof(cl_mem), &d_offset[1]);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_offset");
 
     printf("Complete setting arguments \n");
