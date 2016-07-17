@@ -1,5 +1,8 @@
 __global int fmap1[128][34][34];
 
+
+
+
 __kernel void conv( __global int *restrict d_fmap0,
 __global int *restrict d_w1,
 __global int *restrict d_norm1,
@@ -10,9 +13,9 @@ __global int *restrict d_debug
 	int fnum1, hei1, wid1;
 	int i1, j1, k1, temp, fmap, w, index;
 
-     	   fnum1 = get_global_id(0);
-           hei1 = get_global_id(1);
-           wid1 = get_global_id(2);
+     	   fnum1 = get_global_id(2)+ d_debug[3];
+           hei1 = get_global_id(0);
+           wid1 = get_global_id(1);
            index = wid1 + (hei1 * 32) + (fnum1 * 32 * 32);
 
 

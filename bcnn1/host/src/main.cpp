@@ -34,12 +34,12 @@ cl_mem d_debug;
 
 size_t global[3];                       // global domain size for our calculation
 size_t local[3];                       	// local domain size for our calculation
-size_t offset[3];                       	// offset size for our calculation
+size_t offset[4];                       	// offset size for our calculation
 cl_platform_id platform;                // compute platform id
 cl_device_id device;                	// compute device id
 cl_context context;                 	// compute context
 
-cl_command_queue queue[1];              // compute command queue
+cl_command_queue queue[2];              // compute command queue
 cl_program program;                	    // compute program
 cl_kernel kernel[2];                   	// compute kernel
 
@@ -93,8 +93,10 @@ int initialize(){
     //
     queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkerror(err,"Error: Failed to create a command queue[0]!");
+    queue[1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+    checkerror(err,"Error: Failed to create a command queue[1]!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_e1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -123,6 +125,9 @@ int initialize(){
     kernel[0] = clCreateKernel(program, "conv", &err);
     checkerror(err,"Error: Failed to create compute kernel[0]!");
 
+    kernel[1] = clCreateKernel(program, "conv", &err);
+    checkerror(err,"Error: Failed to create compute kernel[1]!");
+
     // Create the input and output arrays in device memory for our calculation
     //
     d_fmap0 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
@@ -130,14 +135,14 @@ int initialize(){
     d_norm1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
-    d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3, NULL, NULL);
+    d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 4, NULL, NULL);
     printf("Complete creating arguments \n");
     return 0;
 }
 
 void run(){
 
-    h_debug = {128,32,32};
+    h_debug = {128,32,32,8};
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -168,19 +173,37 @@ void run(){
 
     err = clSetKernelArg(kernel[0],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
+
+    err = clSetKernelArg(kernel[1],0, sizeof(cl_mem), &d_fmap0);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_fmap0");
+
+    err = clSetKernelArg(kernel[1],1, sizeof(cl_mem), &d_w1);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_w1");
+
+    err = clSetKernelArg(kernel[1],2, sizeof(cl_mem), &d_norm1);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_norm1");
+
+    err = clSetKernelArg(kernel[1],3, sizeof(cl_mem), &d_act1);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_act1");
+
+    err = clSetKernelArg(kernel[1],4, sizeof(cl_mem), &d_debug);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_debug");
     printf("Complete setting arguments \n");
 
 
-    global = {16, 32, 32};
+    global = {32, 32, 8};
     //local = {1,32,32};
 
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
 
-    clFinish(queue[0]);
+    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
+    checkerror(err,"Error: Failed to execute kernel[1]");
 
-    err = clEnqueueReadBuffer( queue[0] , d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL );
-    checkerror(err,"Error: Failed to read kernel arguments! - kernel[0] - d_act1");
+    clFinish(queue[0]);
+    clFinish(queue[1]);
+    err = clEnqueueReadBuffer( queue[1] , d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL );
+    checkerror(err,"Error: Failed to read kernel arguments! - kernel[1] - d_act1");
 
 
     printf("Complete \n");
@@ -189,7 +212,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 16; i++){
+    for(unsigned char i = 16; i < 32; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
@@ -223,6 +246,8 @@ void cleanup(){
     clReleaseProgram(program);
     clReleaseKernel(kernel[0]);
     clReleaseCommandQueue(queue[0]);
+    clReleaseKernel(kernel[1]);
+    clReleaseCommandQueue(queue[1]);
     clReleaseContext(context);
 
 }
