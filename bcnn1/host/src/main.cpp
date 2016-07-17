@@ -29,7 +29,7 @@ cl_uint numPlatforms;
 
 //cl_mem x;                  				// device memory used for the input array
 cl_mem d_fmap0,d_norm1,d_w1,d_fmap1,d_act1;
-cl_mem d_debug;
+cl_mem d_debug,d_offset;
 //int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
 
 size_t global[3];                       // global domain size for our calculation
@@ -57,8 +57,8 @@ int  w1[128][3][3][3]={-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,
 
 int h_fmap1[128 * 34 * 34];
 int h_act1[128 * 32 * 32];
-int h_debug[4 ];
-int h_offset;
+int h_debug[3];
+int h_offset[16];
 void cleanup();
 int initialize();
 void run();
@@ -136,13 +136,14 @@ int initialize(){
     d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
     d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 4, NULL, NULL);
+    d_offset = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 16, NULL, NULL);
     printf("Complete creating arguments \n");
     return 0;
 }
 
 void run(){
 
-    h_debug = {128,32,32,8};
+    h_debug = {128,32,32};
     // Write our data set into the input array in device memory
     //
     err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -155,6 +156,9 @@ void run(){
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
 
     err = clEnqueueWriteBuffer(queue[0], d_debug, CL_FALSE, 0, sizeof(int) * 3 , h_debug, 0, NULL, NULL);
+    checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
+
+    err = clEnqueueWriteBuffer(queue[0], d_offset, CL_FALSE, 0, sizeof(int) * 16 , h_offset, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
 
     // Set the arguments to our compute kernel
@@ -174,6 +178,9 @@ void run(){
     err = clSetKernelArg(kernel[0],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_debug");
 
+    err = clSetKernelArg(kernel[0],5, sizeof(cl_mem), &d_offset[0]);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[0] - d_offset");
+
     err = clSetKernelArg(kernel[1],0, sizeof(cl_mem), &d_fmap0);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_fmap0");
 
@@ -188,7 +195,12 @@ void run(){
 
     err = clSetKernelArg(kernel[1],4, sizeof(cl_mem), &d_debug);
     checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_debug");
+
+    err = clSetKernelArg(kernel[1],5, sizeof(cl_mem), &d_offset[1]);
+    checkerror(err,"Error: Failed to set kernel arguments! - kernel[1] - d_offset");
+
     printf("Complete setting arguments \n");
+
 
 
     global = {32, 32, 8};
@@ -212,7 +224,7 @@ void run(){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 16; i < 32; i++){
+    for(unsigned char i = 0; i < 16; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
@@ -227,8 +239,8 @@ void run(){
                     flag++;
                 }
 
-                if(flag > 0)
-                    printf("Matrix %d %d %d - %d\n",i,j,k,flag);
+              //  if(flag > 0)
+              //      printf("Matrix %d %d %d - %d\n",i,j,k,flag);
             }
         }
         if(flag > 0)
