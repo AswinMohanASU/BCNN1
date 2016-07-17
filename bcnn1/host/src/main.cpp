@@ -217,10 +217,10 @@ void run(){
     global = {32, 32, 1};
     //local = {1,32,32};
 
-    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, &event_kernel_0);
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[0]");
-    global = {32, 32, 1};
-    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, &event_kernel_1);
+    //global = {32, 32, 1};
+    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
     checkerror(err,"Error: Failed to execute kernel[1]");
 
     clFinish(queue[0]);
@@ -266,6 +266,7 @@ void cleanup(){
     clReleaseMemObject(d_fmap0);
     clReleaseMemObject(d_w1);
     clReleaseMemObject(d_norm1);
+    clReleaseMemObject(d_act1);
     clReleaseProgram(program);
     clReleaseKernel(kernel[0]);
     clReleaseCommandQueue(queue[0]);
