@@ -162,9 +162,10 @@ void run(){
     err = clEnqueueWriteBuffer(queue[0], d_debug, CL_FALSE, 0, sizeof(int) * 3 , h_debug, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
 
-    err = clEnqueueWriteBuffer(queue[0], d_offset_0, CL_FALSE, 0, sizeof(int) , h_offset_0, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(queue[0], d_offset_0, CL_FALSE, 0, sizeof(int), &h_offset_0, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset_0");
-    err = clEnqueueWriteBuffer(queue[0], d_offset_1, CL_FALSE, 0, sizeof(int) , h_offset_1, 0, NULL, NULL);
+
+    err = clEnqueueWriteBuffer(queue[0], d_offset_1, CL_FALSE, 0, sizeof(int), &h_offset_1, 0, NULL, NULL);
     checkerror(err,"Error: Failed to copy kernel arguments! - kernel[0] - h_offset_1");
 
     // Set the arguments to our compute kernel
