@@ -22,18 +22,15 @@
 using namespace std;
 using namespace aocl_utils;
 #define AOCL_ALIGNMENT 64
-
+#define N 16
 unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
 
 //cl_mem x;                  				// device memory used for the input array
-cl_mem d_fmap0,d_norm1,d_w1,d_fmap1,d_act1;
-cl_mem d_fmap0_1,d_norm1_1,d_w1_1,d_fmap1_1,d_act1_1;
-cl_mem d_fmap0_2,d_norm1_2,d_w1_2,d_fmap1_2,d_act1_2;
-cl_mem d_fmap0_3,d_norm1_3,d_w1_3,d_fmap1_3,d_act1_3;
-cl_mem d_debug;
-cl_mem d_offset[16];
+cl_mem d_fmap0[N],d_norm1[N],d_w1[N],d_fmap1[N],d_act1[N];
+cl_mem d_debug[N];
+cl_mem d_offset[N];
 //int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
 
 size_t global[3];                       // global domain size for our calculation
@@ -43,9 +40,9 @@ cl_platform_id platform;                // compute platform id
 cl_device_id device;                	// compute device id
 cl_context context;                 	// compute context
 
-cl_command_queue queue[16];             // compute command queue
+cl_command_queue queue[N];             // compute command queue
 cl_program program;                	    // compute program
-cl_kernel kernel[16];                   	// compute kernel
+cl_kernel kernel[N];                   	// compute kernel
 
 int h_fmap0 [3 * 34 * 34] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,8,9,9,8,7,8,8,7,8,8,8,8,9,10,10,10,8,8,8,7,5,5,5,5,4,3,3,4,2,0,-3,0,0,6,6,8,9,8,8,9,8,9,7,7,8,9,10,11,11,10,8,6,6,4,3,3,3,5,5,4,4,4,2,-1,-2,0,0,6,6,7,10,8,9,9,9,9,8,7,7,8,9,10,10,10,8,4,-2,-4,-7,-6,-3,-2,2,4,3,4,3,1,-2,0,0,7,7,8,11,10,10,10,10,9,9,10,15,12,7,8,9,7,5,-6,-6,-7,-9,-12,-13,-10,-11,-4,1,3,3,2,0,0,0,7,7,8,10,10,9,10,9,9,9,11,29,16,6,4,4,-4,-12,-10,-4,-4,-5,-7,-8,-13,-11,-10,-5,0,3,1,0,0,0,5,1,1,5,8,9,10,10,9,9,9,13,7,0,-7,-15,-14,-15,-9,-2,-1,-2,-3,-8,-7,-9,-17,-15,-5,3,3,2,0,0,0,-4,-20,-10,6,10,10,10,10,9,9,5,0,0,-7,-14,-12,-13,-11,1,4,-1,-5,-5,-3,-10,-16,-20,-12,1,3,2,0,0,1,-7,-21,-14,4,10,9,10,11,8,3,-2,1,4,-3,-10,-9,-10,-12,-1,9,2,-6,-5,-7,-10,-18,-19,-17,-5,3,2,0,0,10,-6,-18,-1,6,8,9,9,9,11,-4,-1,7,7,-2,-10,-11,-11,-12,-11,3,4,-4,-10,-11,-10,-14,-17,-21,-13,1,2,0,0,13,2,-8,6,11,7,7,6,19,27,19,7,11,5,-1,-8,-10,-13,-17,-13,2,4,1,-5,-10,-10,-11,-13,-19,-21,-8,1,0,0,13,-5,4,9,12,7,8,-1,21,27,22,9,13,7,-1,-2,-12,-12,-20,-9,12,7,7,-5,-10,-6,-10,-12,-17,-21,-17,-6,0,0,15,-7,2,10,14,9,11,2,-3,16,17,10,14,15,2,-3,-6,-11,-22,-1,20,8,4,-8,-11,-8,-6,-10,-13,-18,-16,-13,0,0,15,-9,0,12,11,9,12,8,-7,10,10,2,14,22,8,-1,-2,-3,-19,5,16,7,-1,-9,-11,-11,-8,-10,-11,-13,-12,-13,0,0,15,-8,6,14,-2,2,11,10,-6,5,4,10,15,24,13,3,0,-3,-14,6,14,5,-3,-10,-12,-13,-12,-7,-7,-9,-7,-8,0,0,16,-5,10,14,-5,-7,7,10,-7,-3,3,17,15,11,4,6,4,-6,-14,6,13,2,1,-4,-10,-9,-8,-4,-3,-7,-7,-3,0,0,17,1,11,14,1,-12,3,7,-3,1,4,25,28,4,2,1,-2,-5,-8,4,10,6,-4,-10,-14,-10,-5,-4,-2,-6,-2,2,0,0,18,4,10,15,10,-12,0,3,3,-8,6,11,8,3,-4,-4,-6,-5,-4,11,7,5,2,-4,-12,-12,-8,-6,-5,-1,6,4,0,0,21,9,9,13,12,-8,-8,7,5,-5,0,-2,-3,-3,-6,-3,-10,-6,4,-2,-14,0,1,-13,-16,-17,-14,-6,-3,4,5,3,0,0,21,12,10,11,12,-1,-10,3,6,2,-6,-12,2,-1,0,5,-10,-9,5,1,-3,-5,-13,-15,-20,-15,-10,1,7,8,6,6,0,0,17,14,11,11,12,4,-10,-2,-1,2,4,-14,0,-5,4,14,-3,-13,1,2,2,-9,-19,-18,-20,-9,-2,9,11,9,7,5,0,0,9,16,13,12,13,6,-7,1,11,-6,-8,-12,-8,-1,12,15,5,-7,-9,-10,-16,-20,-22,-25,-20,-16,-5,4,4,0,0,-2,0,0,-3,16,12,12,13,3,-11,5,29,22,1,2,5,12,15,16,10,-1,-4,-16,-22,-23,-19,-17,-16,-17,-14,-13,-12,-14,-17,-18,0,0,-12,12,11,12,12,3,-4,20,31,30,20,-1,-3,-1,-3,-1,-6,-14,-14,-16,-18,-19,-19,-17,-17,-19,-21,-19,-17,-19,-21,-21,0,0,-21,-8,4,10,12,9,9,29,31,24,-4,-16,-18,-19,-19,-19,-20,-21,-20,-21,-22,-20,-20,-21,-21,-20,-20,-19,-18,-18,-19,-20,0,0,-24,-24,-17,1,9,1,16,31,28,3,-16,-19,-19,-19,-19,-19,-20,-21,-22,-23,-22,-22,-22,-21,-20,-17,-16,-17,-17,-19,-20,-19,0,0,-19,-24,-23,-13,0,0,21,31,14,-15,-18,-19,-18,-18,-20,-20,-21,-21,-22,-22,-21,-21,-21,-20,-17,-16,-15,-17,-18,-19,-14,-11,0,0,-18,-22,-23,-21,-15,0,23,27,-1,-17,-19,-17,-18,-20,-20,-20,-20,-21,-21,-20,-20,-20,-18,-17,-18,-20,-21,-22,-19,-13,-10,-13,0,0,-19,-22,-24,-22,-20,-12,18,20,-7,-15,-18,-19,-17,-19,-21,-20,-20,-19,-20,-20,-19,-22,-22,-19,-20,-22,-24,-21,-15,-15,-20,-19,0,0,-19,-22,-23,-23,-21,-20,-6,10,-15,-18,-18,-18,-16,-17,-18,-20,-21,-21,-20,-19,-20,-21,-21,-22,-22,-21,-20,-16,-20,-23,-27,-19,0,0,-14,-21,-23,-22,-22,-21,-21,-14,-19,-23,-24,-22,-19,-17,-17,-18,-17,-16,-17,-18,-19,-20,-22,-23,-21,-16,-12,-13,-17,-22,-28,-21,0,0,-16,-19,-22,-21,-22,-21,-20,-21,-21,-24,-25,-24,-24,-24,-22,-20,-17,-16,-15,-13,-14,-19,-21,-21,-16,-10,-4,-8,-16,-25,-24,-26,0,0,-18,-17,-20,-21,-21,-21,-21,-22,-22,-25,-26,-24,-25,-24,-26,-27,-23,-20,-16,-13,-15,-18,-18,-20,-15,-9,-5,-9,-19,-25,-23,-26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-4,-4,-3,-2,-4,-4,-3,-4,-4,-4,-3,-4,-4,-3,-3,-2,-3,-4,-4,-4,-4,-5,-5,-5,-5,-6,-7,-7,-7,-8,-9,-10,0,0,-4,-4,-3,-3,-4,-4,-3,-3,-3,-4,-4,-4,-4,-2,-3,-3,-3,-4,-4,-3,-4,-6,-6,-7,-5,-6,-6,-7,-7,-8,-9,-10,0,0,-4,-4,-4,-4,-5,-3,-3,-3,-3,-3,-3,-4,-4,-3,-3,-4,-3,-3,-4,-8,-9,-12,-12,-10,-10,-8,-6,-7,-7,-7,-8,-9,0,0,-5,-4,-4,-4,-4,-3,-2,-2,-3,-3,-1,4,1,-4,-3,-3,-4,-4,-12,-10,-9,-9,-13,-16,-14,-16,-10,-7,-6,-6,-7,-8,0,0,-5,-3,-3,-3,-3,-4,-2,-3,-4,-3,0,21,7,-3,-4,-5,-12,-18,-14,-6,-4,-3,-6,-8,-13,-12,-13,-11,-8,-6,-8,-8,0,0,-4,-6,-7,-4,-3,-4,-3,-3,-4,-3,-2,3,-1,-6,-13,-19,-17,-17,-11,-4,-2,-1,-3,-8,-7,-9,-17,-17,-11,-5,-7,-8,0,0,-7,-8,-22,-13,-3,-2,-3,-2,-3,-3,-2,-5,-7,-5,-10,-15,-11,-13,-11,1,4,-2,-7,-6,-4,-11,-14,-20,-16,-7,-7,-8,0,0,-3,-8,-21,-15,-4,-3,-3,-3,-2,-4,-4,-8,-4,1,-5,-10,-8,-10,-12,-2,6,-1,-8,-7,-8,-11,-16,-18,-20,-11,-6,-7,0,0,8,-5,-17,-2,-1,-4,-3,-1,-2,2,-9,-5,3,4,-4,-12,-11,-10,-12,-14,-1,2,-6,-12,-12,-11,-13,-17,-22,-17,-5,-6,0,0,12,3,-7,6,5,-3,-3,-2,13,21,13,1,6,1,-4,-10,-11,-13,-17,-14,-1,1,-1,-7,-11,-10,-10,-13,-19,-24,-13,-6,0,0,13,-3,6,10,7,-4,-2,-9,17,23,15,2,8,2,-5,-4,-13,-12,-20,-10,9,5,5,-7,-11,-6,-10,-12,-17,-22,-20,-11,0,0,15,-5,4,12,10,-2,-1,-8,-8,13,11,4,8,11,-2,-5,-7,-11,-22,-2,18,6,3,-9,-12,-8,-6,-10,-13,-18,-18,-17,0,0,16,-8,2,13,7,-1,-1,-4,-14,6,4,-3,9,18,5,-4,-3,-3,-19,5,14,5,-2,-10,-11,-11,-8,-10,-10,-13,-13,-18,0,0,16,-8,6,15,-4,-5,-1,-3,-13,1,-1,5,11,22,11,1,-3,-3,-14,6,13,4,-4,-10,-12,-13,-12,-7,-6,-10,-9,-13,0,0,17,-5,10,14,-4,-9,-2,-1,-13,-5,-1,14,13,9,3,4,2,-7,-14,6,12,1,0,-4,-10,-8,-8,-4,-3,-8,-10,-8,0,0,17,0,10,12,2,-11,-2,-1,-8,-2,1,23,26,3,1,-2,-4,-6,-10,2,8,5,-5,-10,-13,-10,-6,-4,-4,-10,-8,-6,0,0,18,4,9,13,10,-10,-1,0,-2,-12,4,9,6,1,-5,-5,-6,-6,-9,4,3,3,1,-5,-13,-12,-8,-9,-11,-10,-5,-6,0,0,21,9,10,14,13,-6,-8,5,2,-8,-3,-5,-6,-5,-9,-4,-9,-6,0,-8,-17,-2,0,-14,-17,-17,-14,-8,-8,-4,-3,-4,0,0,20,14,12,13,14,1,-10,3,5,0,-9,-15,-2,-4,-3,4,-9,-8,3,-3,-4,-7,-14,-17,-21,-16,-14,-5,-2,-2,-3,-4,0,0,16,15,12,13,13,5,-9,-2,-1,2,2,-17,-2,-7,2,12,-2,-13,-2,-1,0,-10,-19,-19,-19,-9,-9,-2,-2,-4,-4,-5,0,0,7,16,12,11,13,7,-6,2,12,-5,-9,-12,-9,-2,11,13,5,-7,-12,-12,-16,-18,-20,-23,-17,-14,-7,-1,-1,-4,-4,-5,0,0,-2,18,12,10,13,4,-10,6,29,23,3,3,7,13,17,16,11,1,-4,-16,-19,-18,-14,-11,-10,-11,-7,-6,-6,-8,-9,-9,0,0,-5,17,13,11,12,4,-4,20,30,31,23,4,1,3,1,1,-1,-8,-10,-11,-11,-11,-10,-8,-8,-9,-8,-6,-5,-7,-7,-8,0,0,-9,2,10,11,13,10,9,29,30,25,2,-10,-12,-13,-13,-13,-12,-11,-11,-11,-10,-9,-9,-10,-9,-8,-8,-8,-8,-8,-8,-9,0,0,-9,-10,-6,6,13,2,15,30,29,8,-8,-11,-11,-10,-11,-11,-10,-11,-11,-12,-11,-10,-10,-9,-9,-6,-6,-6,-6,-7,-8,-6,0,0,-4,-8,-10,-5,5,2,21,31,17,-8,-9,-10,-9,-9,-11,-11,-11,-11,-12,-11,-10,-9,-9,-8,-5,-4,-4,-5,-5,-5,-1,2,0,0,-3,-7,-10,-11,-8,4,25,29,4,-9,-10,-8,-9,-11,-11,-11,-11,-11,-10,-10,-9,-7,-5,-4,-5,-7,-8,-9,-5,1,3,-1,0,0,-4,-7,-9,-10,-11,-5,22,24,0,-6,-8,-10,-7,-10,-12,-11,-11,-10,-9,-9,-7,-9,-8,-6,-6,-8,-10,-6,0,0,-7,-8,0,0,-5,-7,-9,-10,-10,-11,1,17,-7,-7,-8,-8,-6,-7,-8,-11,-12,-12,-10,-9,-9,-8,-8,-9,-9,-8,-6,-1,-4,-9,-16,-8,0,0,-1,-7,-10,-9,-10,-9,-12,-5,-9,-12,-14,-11,-8,-7,-6,-9,-8,-7,-7,-7,-8,-8,-10,-11,-9,-4,1,1,-3,-7,-15,-10,0,0,-3,-6,-10,-9,-9,-9,-10,-11,-10,-13,-15,-13,-14,-13,-12,-10,-8,-6,-4,-2,-4,-8,-10,-10,-5,1,7,4,-3,-11,-11,-15,0,0,-5,-5,-9,-10,-9,-9,-10,-11,-12,-14,-15,-13,-14,-13,-16,-17,-14,-10,-6,-2,-4,-8,-8,-10,-4,1,4,2,-7,-12,-11,-15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-19,-20,-19,-18,-20,-21,-20,-20,-20,-21,-21,-18,-19,-21,-20,-20,-21,-22,-22,-21,-20,-20,-20,-21,-20,-22,-21,-21,-22,-22,-22,-23,0,0,-19,-21,-20,-17,-19,-21,-20,-20,-20,-22,-21,-18,-18,-21,-21,-23,-24,-23,-21,-19,-18,-18,-18,-19,-19,-20,-20,-22,-23,-23,-23,-23,0,0,-20,-23,-22,-19,-21,-20,-20,-20,-21,-21,-19,-17,-19,-22,-22,-22,-22,-20,-18,-19,-18,-19,-20,-19,-19,-18,-19,-22,-22,-23,-23,-23,0,0,-21,-23,-23,-20,-21,-20,-19,-19,-20,-20,-17,-8,-13,-21,-20,-18,-17,-15,-20,-15,-13,-11,-15,-19,-18,-22,-20,-20,-21,-22,-22,-22,0,0,-21,-19,-19,-20,-21,-21,-20,-20,-21,-21,-17,9,-5,-17,-16,-14,-19,-23,-17,-7,-4,-2,-5,-8,-15,-14,-20,-20,-19,-20,-22,-22,0,0,-18,-15,-17,-18,-20,-22,-21,-21,-22,-22,-21,-10,-12,-17,-21,-23,-21,-20,-13,-4,-2,-1,-3,-8,-7,-10,-20,-22,-19,-17,-20,-21,0,0,-17,-12,-27,-24,-19,-21,-21,-21,-21,-22,-22,-18,-17,-13,-14,-17,-13,-15,-13,-2,1,-5,-9,-8,-6,-12,-14,-22,-22,-17,-19,-22,0,0,-9,-9,-22,-21,-17,-21,-22,-22,-19,-19,-19,-19,-12,-5,-8,-12,-10,-11,-14,-5,3,-4,-11,-10,-11,-13,-17,-19,-23,-19,-19,-22,0,0,4,-5,-17,-4,-11,-21,-21,-19,-15,-8,-17,-12,-2,0,-6,-13,-12,-11,-13,-16,-4,-1,-8,-14,-14,-13,-15,-18,-24,-22,-17,-20,0,0,9,4,-5,5,-4,-19,-20,-16,4,17,9,-2,4,-1,-5,-12,-12,-14,-18,-17,-4,-1,-3,-9,-13,-12,-12,-14,-21,-27,-20,-17,0,0,12,-1,7,10,-1,-19,-19,-20,13,24,15,1,7,1,-6,-6,-14,-12,-21,-12,6,2,3,-9,-12,-8,-12,-13,-17,-23,-23,-20,0,0,15,-3,6,12,2,-17,-18,-20,-12,15,9,1,6,8,-5,-8,-9,-12,-23,-4,16,4,1,-11,-13,-10,-8,-11,-12,-18,-19,-25,0,0,16,-5,4,14,1,-14,-18,-20,-20,6,0,-8,5,13,0,-7,-5,-4,-20,3,12,3,-4,-11,-12,-12,-10,-11,-9,-13,-15,-25,0,0,16,-6,9,16,-7,-15,-17,-19,-22,-2,-6,0,7,18,7,-3,-5,-4,-14,5,11,2,-6,-12,-13,-14,-13,-8,-7,-11,-14,-23,0,0,17,-4,11,15,-4,-15,-16,-18,-23,-10,-6,10,10,8,3,2,-1,-8,-14,5,10,0,-1,-5,-11,-9,-9,-6,-4,-12,-18,-20,0,0,17,2,11,13,4,-12,-10,-12,-18,-8,-3,20,25,2,1,-4,-6,-8,-13,-2,4,3,-6,-12,-14,-10,-7,-7,-8,-18,-19,-19,0,0,19,8,12,15,11,-9,0,-4,-11,-22,1,7,3,-3,-10,-9,-9,-10,-17,-6,-4,0,-2,-7,-13,-12,-8,-11,-18,-20,-18,-20,0,0,21,13,14,16,14,-5,-6,4,-4,-16,-5,-8,-9,-9,-13,-7,-10,-8,-6,-15,-23,-5,-3,-16,-19,-18,-15,-12,-15,-14,-15,-18,0,0,19,16,15,16,15,1,-8,4,3,-4,-12,-18,-5,-8,-7,1,-8,-8,-2,-8,-9,-10,-17,-18,-22,-16,-21,-17,-16,-18,-20,-20,0,0,13,14,13,14,14,6,-7,1,1,2,0,-19,-5,-10,-1,10,-2,-13,-6,-5,-2,-12,-20,-19,-18,-8,-16,-14,-15,-18,-19,-20,0,0,4,14,12,11,13,8,-4,4,14,-4,-10,-13,-10,-3,11,12,5,-6,-15,-16,-17,-18,-19,-21,-14,-11,-13,-11,-13,-16,-14,-16,0,0,-1,18,12,10,13,5,-9,8,30,24,4,5,9,16,20,17,13,4,-4,-16,-17,-14,-10,-6,-4,-4,-1,-2,-2,-4,-4,-3,0,0,1,21,16,12,13,5,-4,20,29,30,25,7,5,8,7,6,5,-2,-6,-6,-4,-4,-3,-1,1,1,2,3,4,1,2,1,0,0,2,10,15,15,16,11,9,27,28,24,6,-4,-5,-5,-5,-6,-3,-2,-4,-3,-1,-1,0,0,1,3,2,2,2,2,3,1,0,0,3,1,2,12,15,2,13,28,29,12,0,-2,-2,-2,-2,-3,-3,-3,-3,-4,-2,-1,-1,1,2,4,4,4,4,4,3,5,0,0,8,3,-1,2,10,4,20,30,19,-2,0,-1,0,0,-2,-3,-4,-4,-4,-3,-1,1,2,3,5,6,5,5,6,6,10,13,0,0,9,5,1,-1,0,9,26,29,6,-3,-1,1,0,-2,-2,-2,-2,-2,-1,0,1,3,5,6,5,3,3,3,7,12,13,10,0,0,8,5,3,1,0,3,26,26,3,0,0,-1,1,-1,-3,-2,-1,0,1,1,3,3,3,5,5,3,1,6,13,12,4,3,0,0,8,5,4,3,3,-1,8,20,-2,-2,0,1,3,2,1,-2,-2,-2,1,2,2,3,3,2,2,3,6,12,9,3,-6,2,0,0,12,5,2,4,3,1,-4,1,-3,-5,-5,-3,0,2,2,0,1,2,3,3,2,2,1,-1,1,6,13,13,10,4,-5,0,0,0,10,5,1,4,3,2,-1,-4,-3,-6,-6,-4,-5,-5,-3,-2,0,2,4,7,6,2,0,0,4,10,17,15,9,1,0,-5,0,0,8,5,1,2,2,1,-1,-3,-3,-5,-6,-5,-6,-5,-7,-9,-7,-2,2,6,4,1,1,-1,4,10,13,12,4,-1,0,-4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
 
@@ -59,15 +56,12 @@ int fmap1[128][34][34] = {{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 
 int  w1[128][3][3][3]={-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,-1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,-1,1,1,1,1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,-1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,-1,-1,-1,1,-1,1,1,-1,1,-1,1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,-1,1,-1,-1,-1,-1,-1,1,1,1,1,1,1,-1,-1,-1,1,1,-1,-1,1,1,-1,-1,-1,1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,1,1,1,1,1,1,-1,-1,1,1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,-1,1,-1,1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,-1,-1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,1,-1,1,-1,1,-1,-1,1,1,1,-1,1,1,1,-1,1,1,-1,1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,-1,1,-1,-1,-1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,-1,1,-1,-1,1,1,1,-1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,1,1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,1,-1,1,1,-1,1,1,-1,1,1,1,1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,1,1,-1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,-1,1,-1,-1,-1,-1,-1,-1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,-1,-1,1,-1,1,1,-1,1,1,1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,1,1,1,-1,1,-1,-1,-1,-1,1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,-1,1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,1,1,1,1,1,1,1,1,-1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,1,1,1,-1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,-1,-1,1,-1,1,1,-1,-1,-1,-1,1,1,1,1,-1,1,1,1,-1,1,1,-1,1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,-1,1,-1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,-1,1,1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,1,1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,1,1,-1,-1,1,-1,1,-1,1,1,1,-1,-1,1,-1,1,-1,1,1,1,-1,-1,1,-1,1,1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,-1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,1,1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,1,1,-1,1,-1,-1,-1,1,1,1,1,-1,1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,-1,1,-1,1,-1,1,1,-1,-1,-1,1,-1,-1,-1,1,1,-1,1,-1,1,-1,-1,1,1,-1,1,1,-1,1,1,1,-1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,1,-1,1,-1,-1,1,-1,1,-1,1,-1,1,-1,-1,1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,1,-1,-1,-1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,1,-1,1,1,1,1,-1,-1,1,1,-1,-1,1,-1,-1,-1,-1,1,1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,-1,-1,-1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,-1,1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,1,1,1,-1,-1,1,-1,-1,-1,1,1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,-1,1,-1,1,1,-1,1,1,1,-1,1,-1,1,1,-1,1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,1,1,-1,-1,1,1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,1,-1,1,1,1,1,1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,1,-1,1,-1,-1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,-1,1,-1,1,1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,1,1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,-1,-1,-1,1,-1,1,1,1,1,-1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,1,1,-1,1,1,-1,1,1,1,1,1,-1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,-1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,-1,-1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,1,-1,1,1,1,1,1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,-1,1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,1,1,1,1,1,1,1,-1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,1,1,-1,-1,1,1,-1,1,-1,1,-1,-1,-1,-1,1,-1,1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,1,-1,-1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,-1,1,1,1,1,-1,-1,1,1,-1,-1,1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,1,1,-1,-1,1,1,-1,1,1,1,1,1,1,1,1,1,-1,-1,-1,1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,-1,-1,1,-1,-1,1,1,1,1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,1,1,-1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,1,1,1,1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,1,-1,1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,-1,-1,-1,1,-1,-1,-1,1,1,-1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,-1,-1,-1,1,1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,1,-1,1,1,1,1,1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,1,1,1,1,-1,1,1,-1,-1,-1,-1,1,1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,-1,1,1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,-1,-1,1,1,1,-1,-1,1,1,-1,-1,1,1,1,-1,-1,1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,1,1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,1,-1,1,-1,1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,1,1,-1,1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,-1,1,1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,1,-1,1,-1,-1,1,-1,1,-1,1,1,1,-1,-1,1,-1,1,-1,1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1,1,1,1,1,1,-1,-1,-1,-1,-1,1,-1,1,-1,-1,1,1,-1,1,1,-1,1,1,1,1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,1,-1,-1,1,-1,-1,-1,1,1,1,-1,-1,1,-1,1,1,-1,1,-1,1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,1,1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1,1,1,-1,-1,-1,1,1,-1,1,1,-1,1,1,1,1,1,-1,1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,1,1,1,-1,-1,-1,1,-1,-1,1,1,-1,1,-1,-1,1,-1,-1,1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,1,1,-1,-1,1,1,1,-1,1,1,1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,1,-1,-1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,-1,-1,-1,1,1,-1,1,1,1,1,-1,-1,1,1,-1,-1,1,1,1,-1,1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1};
 
-int h_fmap1[128 * 34 * 34];
-int h_act1[128 * 32 * 32];
-int h_act1_1[128 * 32 * 32];
-int h_act1_2[128 * 32 * 32];
-int h_act1_3[128 * 32 * 32];
+int h_fmap1[N][128 * 34 * 34];
+int h_act1[N][128 * 32 * 32];
 
 int h_debug[3];
-int h_offset[16];
-
+int h_offset[N];
+int i;
 void cleanup();
 
 
@@ -114,249 +108,101 @@ int main(void){
 
     // Create the input and output arrays in device memory for our calculation
     //
-    d_fmap0 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
-    d_w1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
-    d_norm1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
-    
-    d_fmap0_1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
-    d_w1_1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
-    d_norm1_1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_fmap1_1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_act1_1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
+    for(i = 0; i < N ; i ++){
 
-    d_fmap0_2 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
-    d_w1_2 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
-    d_norm1_2 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_fmap1_2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_act1_2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
-
-    d_fmap0_3 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
-    d_w1_3 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
-    d_norm1_3 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_fmap1_3 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_act1_3 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
-    d_debug = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 4, NULL, NULL);
-
+    d_fmap0[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
+    d_w1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
+    d_norm1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
+    d_fmap1[i] = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
+    d_act1[i] = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
+    d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
+    d_debug[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
+    }
     h_debug = {128,32,32};
 
-    cl_event event_kernel[16];
+    cl_event event_kernel[N];
 
     global = {32, 32, 8};
-     h_offset[0] = 0;
-     h_offset[1] = 8;
-     h_offset[2] = 16;
-     h_offset[3] = 24;
-     h_offset[4] = 32;
+    h_offset[0] = 0;
+        for(i = 1; i < N ; i ++)
+     		h_offset[i] = h_offset[i-1] + 8;
+     	
 
-
-        queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkError(err, "Error: Failed to create a command queue[0]!");
-            queue[1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkError(err, "Error: Failed to create a command queue[1]!");
-            queue[2] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkError(err, "Error: Failed to create a command queue[2]!");
-            queue[3] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkError(err, "Error: Failed to create a command queue[3]!");
-
-        d_offset[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
-        d_offset[1] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
-        d_offset[2] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
-        d_offset[3] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
-
+for(i = 0; i < N ; i ++){
+        queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",i);  
+        
         // Create the compute kernel in the program we wish to run
         //
-        kernel[0] = clCreateKernel(program, "conv", &err);
-        checkError(err, "Error: Failed to create compute kernel[0]!");
-                kernel[1] = clCreateKernel(program, "conv", &err);
-        checkError(err, "Error: Failed to create compute kernel[1]!");
-                kernel[2] = clCreateKernel(program, "conv", &err);
-        checkError(err, "Error: Failed to create compute kernel[2]!");
-                kernel[3] = clCreateKernel(program, "conv", &err);
-        checkError(err, "Error: Failed to create compute kernel[3]!");
-
+        kernel[i] = clCreateKernel(program, "conv", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",i);
 
         // Write our data set into the input array in device memory
         //
-        err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
+        err = clEnqueueWriteBuffer(queue[i], d_fmap0[i], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0",i);
 
-        err = clEnqueueWriteBuffer(queue[0], d_w1, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
+        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1",i);
 
-        err = clEnqueueWriteBuffer(queue[0], d_norm1, CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
+        err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",i);
 
-        err = clEnqueueWriteBuffer(queue[0], d_debug, CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
+        err = clEnqueueWriteBuffer(queue[i], d_debug[i], CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",i);	
 
-        err = clEnqueueWriteBuffer(queue[0], d_offset[0], CL_FALSE, 0, sizeof(int), &h_offset[0], 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[0]");
-
-         // Write our data set into the input array in device memory
-        //
-        err = clEnqueueWriteBuffer(queue[1], d_fmap0_1, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
-
-        err = clEnqueueWriteBuffer(queue[1], d_w1_1, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
-
-        err = clEnqueueWriteBuffer(queue[1], d_norm1_1, CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
-
-        err = clEnqueueWriteBuffer(queue[1], d_debug, CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
-
-        err = clEnqueueWriteBuffer(queue[1], d_offset[1], CL_FALSE, 0, sizeof(int), &h_offset[1], 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[1]");
-
-         // Write our data set into the input array in device memory
-        //
-        err = clEnqueueWriteBuffer(queue[2], d_fmap0_2, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
-
-        err = clEnqueueWriteBuffer(queue[2], d_w1_2, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
-
-        err = clEnqueueWriteBuffer(queue[2], d_norm1_2, CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
-
-        err = clEnqueueWriteBuffer(queue[2], d_debug, CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
-
-        err = clEnqueueWriteBuffer(queue[2], d_offset[2], CL_FALSE, 0, sizeof(int), &h_offset[2], 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[2]");
-
-         // Write our data set into the input array in device memory
-        //
-        err = clEnqueueWriteBuffer(queue[3], d_fmap0_3, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_fmap0");
-
-        err = clEnqueueWriteBuffer(queue[3], d_w1_3, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_w1");
-
-        err = clEnqueueWriteBuffer(queue[3], d_norm1_3, CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_norm1");
-
-        err = clEnqueueWriteBuffer(queue[3], d_debug, CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_debug");
-
-        err = clEnqueueWriteBuffer(queue[3], d_offset[3], CL_FALSE, 0, sizeof(int), &h_offset[3], 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[0] - h_offset[3]");
-
+        err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_offset",i);
+       
         // Set the arguments to our compute kernel
         //
-        err = clSetKernelArg(kernel[0], 0, sizeof(cl_mem), &d_fmap0);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[0] - d_fmap0");
+        err = clSetKernelArg(kernel[i], 0, sizeof(cl_mem), &d_fmap0[i]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap0",i);
 
-        err = clSetKernelArg(kernel[0], 1, sizeof(cl_mem), &d_w1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[0] - d_w1");
+        err = clSetKernelArg(kernel[i], 1, sizeof(cl_mem), &d_w1[i]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w1",i);
 
-        err = clSetKernelArg(kernel[0], 2, sizeof(cl_mem), &d_norm1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[0] - d_norm1");
+        err = clSetKernelArg(kernel[i], 2, sizeof(cl_mem), &d_norm1[i]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",i);
 
-        err = clSetKernelArg(kernel[0], 3, sizeof(cl_mem), &d_act1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[0] - d_act1");
+        err = clSetKernelArg(kernel[i], 3, sizeof(cl_mem), &d_act1[i]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
 
-        err = clSetKernelArg(kernel[0], 4, sizeof(cl_mem), &d_debug);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[0] - d_debug");
+        err = clSetKernelArg(kernel[i], 4, sizeof(cl_mem), &d_debug[i]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_debug",i);
 
-        err = clSetKernelArg(kernel[0], 5, sizeof(cl_mem), &d_offset[0]);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[0] - d_offset");
-
-       
-        err = clSetKernelArg(kernel[1], 0, sizeof(cl_mem), &d_fmap0_1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[1] - d_fmap0");
-
-        err = clSetKernelArg(kernel[1], 1, sizeof(cl_mem), &d_w1_1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[1] - d_w1");
-
-        err = clSetKernelArg(kernel[1], 2, sizeof(cl_mem), &d_norm1_1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[1] - d_norm1");
-
-        err = clSetKernelArg(kernel[1], 3, sizeof(cl_mem), &d_act1_1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[1] - d_act1");
-
-        err = clSetKernelArg(kernel[1], 4, sizeof(cl_mem), &d_debug);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[] - d_debug");
-
-        err = clSetKernelArg(kernel[1], 5, sizeof(cl_mem), &d_offset[1]);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[1] - d_offset");
-
-       
-        err = clSetKernelArg(kernel[2], 0, sizeof(cl_mem), &d_fmap0_2);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[2] - d_fmap0");
-
-        err = clSetKernelArg(kernel[2], 1, sizeof(cl_mem), &d_w1_2);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[2] - d_w1");
-
-        err = clSetKernelArg(kernel[2], 2, sizeof(cl_mem), &d_norm1_2);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[2] - d_norm1");
-
-        err = clSetKernelArg(kernel[2], 3, sizeof(cl_mem), &d_act1_2);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[2] - d_act1");
-
-        err = clSetKernelArg(kernel[2], 4, sizeof(cl_mem), &d_debug);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[] - d_debug");
-
-        err = clSetKernelArg(kernel[2], 5, sizeof(cl_mem), &d_offset[2]);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[2] - d_offset");
-
-
-        err = clSetKernelArg(kernel[3], 0, sizeof(cl_mem), &d_fmap0_3);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[3] - d_fmap0");
-
-        err = clSetKernelArg(kernel[3], 1, sizeof(cl_mem), &d_w1_3);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[3] - d_w1");
-
-        err = clSetKernelArg(kernel[3], 2, sizeof(cl_mem), &d_norm1_3);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[3] - d_norm1");
-
-        err = clSetKernelArg(kernel[3], 3, sizeof(cl_mem), &d_act1_3);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[3] - d_act1");
-
-        err = clSetKernelArg(kernel[3], 4, sizeof(cl_mem), &d_debug);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[] - d_debug");
-
-        err = clSetKernelArg(kernel[3], 5, sizeof(cl_mem), &d_offset[3]);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[3] - d_offset");
+        err = clSetKernelArg(kernel[i], 5, sizeof(cl_mem), &d_offset[i]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
+		
+    }   
 
 
             err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[0]");
-            clFinish(queue[0]);
-            err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
-            checkError(err, "Error: Failed to execute kernel[1]");
-            err = clEnqueueReadBuffer(queue[0], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
-            checkError(err, "Error: Failed to read kernel arguments! - kernel[0] - d_act1");
-            clFinish(queue[1]);
-            err = clEnqueueNDRangeKernel(queue[2], kernel[2], 3, NULL, global, NULL, 0, NULL, NULL);
-            checkError(err, "Error: Failed to execute kernel[2]");
-            err = clEnqueueReadBuffer(queue[1], d_act1_1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1_1, 0, NULL, NULL);
-            checkError(err, "Error: Failed to read kernel arguments! - kernel[0] - d_act1");
-            clFinish(queue[2]);
-            err = clEnqueueNDRangeKernel(queue[3], kernel[3], 3, NULL, global, NULL, 0, NULL, NULL);
-            checkError(err, "Error: Failed to execute kernel[3]");
-            err = clEnqueueReadBuffer(queue[2], d_act1_2, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1_2, 0, NULL, NULL);
-            checkError(err, "Error: Failed to read kernel arguments! - kernel[0] - d_act1");
-            clFinish(queue[3]);
-            err = clEnqueueReadBuffer(queue[3], d_act1_3, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1_3, 0, NULL, NULL);
-            checkError(err, "Error: Failed to read kernel arguments! - kernel[0] - d_act1");
-
+    
+	for(i = 1; i < N ; i ++){        
+            clFinish(queue[i-1]);
+            err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
+            checkError(err, "Error: Failed to execute kernel[%d]",i);
+            err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[i-1], 0, NULL, NULL);
+            checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
+            }
+            clFinish(queue[N-1]);
+            err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[N-1], 0, NULL, NULL);
+            checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
     printf("Complete \n");
 
     correct=0;
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 24; i < 32; i++){
+    for(unsigned char i = 120; i < 128; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(act1[i][j][k] == h_act1_3[ k + (j * 32) + (i * (32*32))]){
+                if(act1[i][j][k] == h_act1[N-1][ k + (j * 32) + (i * (32*32))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
@@ -376,37 +222,19 @@ int main(void){
 
     printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
 
+void cleanup();
 }
 void cleanup(){
-    clReleaseMemObject(d_fmap0);
-    clReleaseMemObject(d_w1);
-    clReleaseMemObject(d_norm1);
-    clReleaseMemObject(d_act1);
-    
-    clReleaseMemObject(d_fmap0_1);
-    clReleaseMemObject(d_w1_1);
-    clReleaseMemObject(d_norm1_1);
-    clReleaseMemObject(d_act1_1);
-    
-    clReleaseMemObject(d_fmap0_2);
-    clReleaseMemObject(d_w1_2);
-    clReleaseMemObject(d_norm1_2);
-    clReleaseMemObject(d_act1_2);
-    
-    clReleaseMemObject(d_fmap0_3);
-    clReleaseMemObject(d_w1_3);
-    clReleaseMemObject(d_norm1_3);
-    clReleaseMemObject(d_act1_3);
 
+for(i = 0; i < N ; i ++){        
+    clReleaseMemObject(d_fmap0[i]);
+    clReleaseMemObject(d_w1[i]);
+    clReleaseMemObject(d_norm1[i]);
+    clReleaseMemObject(d_act1[i]);
+    clReleaseKernel(kernel[i]);
+    clReleaseCommandQueue(queue[i]);
+}
     clReleaseProgram(program);
-    clReleaseKernel(kernel[0]);
-    clReleaseCommandQueue(queue[0]);
-    clReleaseKernel(kernel[1]);
-    clReleaseCommandQueue(queue[1]);
-    clReleaseKernel(kernel[2]);
-    clReleaseCommandQueue(queue[2]);
-    clReleaseKernel(kernel[2]);
-    clReleaseCommandQueue(queue[2]);
     clReleaseContext(context);
 
 }
