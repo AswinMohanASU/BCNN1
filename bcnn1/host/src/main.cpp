@@ -77,7 +77,6 @@ int main(void){
         }
     }
 
-
     loc=0;
     for(i = 0 ; i < N ; i ++){
         for(j=0; j < 8; j++){
@@ -86,11 +85,6 @@ int main(void){
         }
     }
 
-    loc=0;
-    for(i=0;i < 8;i++)
-        if(h_norm1_1[1][i]==h_norm1[i+8])
-            loc++;
-    printf("Correct Arrangement %d %d\n",loc,8);
     char* Plt = "Altera";
 
     //Get PlatformID
@@ -166,10 +160,10 @@ for(i = 0; i < N ; i ++){
         err = clEnqueueWriteBuffer(queue[i], d_fmap0[i], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0",i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 8 * 3 * 3 * 3, &h_w1[i * 216], 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 8 * 3 * 3 * 3, &h_w1_1[i], 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1",i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 8, &h_norm1[i * 8], 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 8, &h_norm1_1[i], 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",i);
 
         err = clEnqueueWriteBuffer(queue[i], d_debug[i], CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
