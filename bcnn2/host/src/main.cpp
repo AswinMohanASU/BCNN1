@@ -64,7 +64,6 @@ int h_offset[N];
 int i;
 void cleanup();
 
-
 int main(void){
 
 

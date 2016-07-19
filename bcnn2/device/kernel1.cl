@@ -51,5 +51,4 @@ __kernel void returndata(__global int *restrict d_fmap1){
            int wid1 = get_global_id(1);
 
 d_fmap1[(wid1 + (hei1 * 34) + (fnum1 * (34 * 34)))]=fmap1[fnum1][hei1][wid1];
-
 }
