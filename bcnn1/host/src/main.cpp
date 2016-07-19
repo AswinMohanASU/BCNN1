@@ -69,12 +69,15 @@ void cleanup();
 
 int main(void){
     loc =0;
+    printf("Before Arrangement\n");
     for(i = 0 ; i < N ; i ++){
         for(j=loc; j < loc + 216; j++){
            h_w1_1[i][j]=h_w1[j];
            loc++;
         }
     }
+    printf("After Arrangement\n");
+
     loc=0;
     for(i =216; i < 432 ;i ++){
         if(h_w1_1[1][i]==h_w1[i])
