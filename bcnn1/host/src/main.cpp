@@ -143,7 +143,7 @@ for(i = 0; i < N ; i ++){
         err = clEnqueueWriteBuffer(queue[i], d_fmap0[i], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0",i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 8 * 3 * 3 * 3, &h_w1[i*216], 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 8 * 3 * 3 * 3, &h_w1[h_offset[i]], 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1",i);
 
         err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 8, &h_norm1[h_offset[i]], 0, NULL, NULL);
