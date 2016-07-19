@@ -129,20 +129,22 @@ int main(void){
     err = clSetKernelArg(kernel[N], 0, sizeof(cl_mem), &d_fmap1);
     checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap0",i);
 
-   // queue[N+1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-    //checkError(err, "Error: Failed to create a command queue[%d]!",N+1);
+    queue[N+1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+    checkError(err, "Error: Failed to create a command queue[%d]!",N+1);
 
-  //  kernel[N+1] = clCreateKernel(program, "initialize", &err);
-    //checkError(err, "Error: Failed to create compute kernel[%d]!",N+1);
+    kernel[N+1] = clCreateKernel(program, "initialize", &err);
+    checkError(err, "Error: Failed to create compute kernel[%d]!",N+1);
 
- //   global = {34, 34, 128};
- //   err = clEnqueueNDRangeKernel(queue[N+1], kernel[N+1], 3, NULL, global, NULL, 0, NULL, NULL);
-//    checkError(err, "Error: Failed to execute kernel[0]");
+    global = {34, 34, 128};
+    err = clEnqueueNDRangeKernel(queue[N+1], kernel[N+1], 3, NULL, global, NULL, 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[0]");
 
     h_offset[0] = 0;
     for(i = 1; i < N ; i ++)
         h_offset[i] = h_offset[i-1] + 8;
     h_debug = {128,32,32};
+
+    clFinish(queue[N+1]);
     for(i = 0; i < N ; i ++){
         queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
         checkError(err, "Error: Failed to create a command queue[%d]!",i);
@@ -204,6 +206,7 @@ int main(void){
     global = {34, 34, 128};
     err = clEnqueueNDRangeKernel(queue[N], kernel[N], 3, NULL, global, NULL, 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[%d]",N);
+    clFinish(queue[N]);
     err = clEnqueueReadBuffer(queue[N], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, &h_fmap1, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_fmap1",N);
     printf("Complete \n");
