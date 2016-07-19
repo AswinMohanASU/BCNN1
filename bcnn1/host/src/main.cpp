@@ -82,7 +82,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_e1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
