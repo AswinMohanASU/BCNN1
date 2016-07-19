@@ -37,7 +37,7 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
     }
 }
 
-__kernel void returndata(__global signed int *restrict x){
+__kernel void returndata(__global int *restrict fmap1){
 		   int fnum1 = get_global_id(2);
            int hei1 = get_global_id(0);
            int wid1 = get_global_id(1);
