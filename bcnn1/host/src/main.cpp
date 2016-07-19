@@ -165,7 +165,7 @@ for(i = 0; i < N ; i ++){
         err = clSetKernelArg(kernel[i], 2, sizeof(cl_mem), &d_norm1[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",i);
 
-        err = clSetKernelArg(kernel[i], 3, sizeof(cl_mem), &d_act1[i]);
+        err = clSetKernelArg(kernel[i], 3, sizeof(cl_mem), &d_act1[0]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
 
         err = clSetKernelArg(kernel[i], 4, sizeof(cl_mem), &d_debug[i]);
@@ -184,11 +184,11 @@ for(i = 0; i < N ; i ++){
             clFinish(queue[i-1]);
             err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[%d]",i);
-            err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[i-1], 0, NULL, NULL);
-            checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
+            //err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[i-1], 0, NULL, NULL);
+            //checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
             }
             clFinish(queue[N-1]);
-            err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[N-1], 0, NULL, NULL);
+            err = clEnqueueReadBuffer(queue[i-1], d_act1[0], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[0], 0, NULL, NULL);
             checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
     printf("Complete \n");
 
@@ -202,7 +202,7 @@ for(i = 0; i < N ; i ++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(act1[i][j][k] == h_act1[N-1][ k + (j * 32) + (i * (32*32))]){
+                if(act1[i][j][k] == h_act1[0][ k + (j * 32) + (i * (32*32))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
