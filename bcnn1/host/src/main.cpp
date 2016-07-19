@@ -79,8 +79,8 @@ int main(void){
     printf("After Arrangement\n");
 
     loc=0;
-    for(i =216; i < 432 ;i ++){
-        if(h_w1_1[1][i]==h_w1[i])
+    for(i =0; i < 216 ;i ++){
+        if(h_w1_1[1][i]==h_w1[i+216])
             loc++;
     }
     printf("Correct Arrangement %d %d\n",loc,216);
