@@ -71,8 +71,8 @@ int main(void){
     loc =0;
     printf("Before Arrangement\n");
     for(i = 0 ; i < N ; i ++){
-        for(j=loc; j < loc + 216; j++){
-           h_w1_1[i][j]=h_w1[j];
+        for(j=0; j < 216; j++){
+           h_w1_1[i][j]=h_w1[loc];
            loc++;
         }
     }
