@@ -128,8 +128,8 @@ int main(void){
 
     for(i = 0; i < N ; i ++){
     d_fmap0[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
-    d_w1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 8 * 3 * 3 * 3, NULL, NULL);
-    d_norm1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 8, NULL, NULL);
+    d_w1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
+    d_norm1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
     d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
     d_debug[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
     }
@@ -160,10 +160,10 @@ for(i = 0; i < N ; i ++){
         err = clEnqueueWriteBuffer(queue[i], d_fmap0[i], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0",i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 8 * 3 * 3 * 3, &h_w1_1[i][0], 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1",i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 8, &h_norm1_1[i][0], 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",i);
 
         err = clEnqueueWriteBuffer(queue[i], d_debug[i], CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
