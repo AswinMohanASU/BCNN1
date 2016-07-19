@@ -231,10 +231,10 @@ for(i = 0; i < N ; i ++){
     clReleaseMemObject(d_fmap0[i]);
     clReleaseMemObject(d_w1[i]);
     clReleaseMemObject(d_norm1[i]);
-    clReleaseMemObject(d_act1[i]);
     clReleaseKernel(kernel[i]);
     clReleaseCommandQueue(queue[i]);
 }
+    clReleaseMemObject(d_act1);
     clReleaseProgram(program);
     clReleaseContext(context);
 
