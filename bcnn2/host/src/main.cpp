@@ -187,7 +187,7 @@ int main(void){
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
     }
-
+/*
     global = {32, 32, 8};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[0]");
@@ -199,7 +199,7 @@ int main(void){
         //err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[i-1], 0, NULL, NULL);
         //checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
     }
-    clFinish(queue[N-1]);
+    clFinish(queue[N-1]); */
     global = {34, 34, 128};
     err = clEnqueueNDRangeKernel(queue[N], kernel[N], 3, NULL, global, NULL, 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[%d]",N);
