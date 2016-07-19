@@ -81,7 +81,7 @@ int main(void){
     loc=0;
     for(i = 0 ; i < N ; i ++){
         for(j=0; j < 8; j++){
-            h_norm1[i][j]=h_w1[loc];
+            h_norm1_1[i][j]=h_norm1[loc];
             loc++;
         }
     }
