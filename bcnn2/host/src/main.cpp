@@ -129,15 +129,15 @@ int main(void){
     err = clSetKernelArg(kernel[N], 0, sizeof(cl_mem), &d_fmap1);
     checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap0",i);
 
-    queue[N+1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+   // queue[N+1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     //checkError(err, "Error: Failed to create a command queue[%d]!",N+1);
 
-    kernel[N+1] = clCreateKernel(program, "initialize", &err);
+  //  kernel[N+1] = clCreateKernel(program, "initialize", &err);
     //checkError(err, "Error: Failed to create compute kernel[%d]!",N+1);
 
-    global = {34, 34, 128};
-    err = clEnqueueNDRangeKernel(queue[N+1], kernel[N+1], 3, NULL, global, NULL, 0, NULL, NULL);
-    checkError(err, "Error: Failed to execute kernel[0]");
+ //   global = {34, 34, 128};
+ //   err = clEnqueueNDRangeKernel(queue[N+1], kernel[N+1], 3, NULL, global, NULL, 0, NULL, NULL);
+//    checkError(err, "Error: Failed to execute kernel[0]");
 
     h_offset[0] = 0;
     for(i = 1; i < N ; i ++)
@@ -187,7 +187,7 @@ int main(void){
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
     }
-/*
+
     global = {32, 32, 8};
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[0]");
@@ -199,7 +199,8 @@ int main(void){
         //err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[i-1], 0, NULL, NULL);
         //checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
     }
-    clFinish(queue[N-1]); */
+    clFinish(queue[N-1]);
+
     global = {34, 34, 128};
     err = clEnqueueNDRangeKernel(queue[N], kernel[N], 3, NULL, global, NULL, 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[%d]",N);
@@ -217,7 +218,7 @@ int main(void){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(/*fmap1[i][j][k]*/ 0 == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
