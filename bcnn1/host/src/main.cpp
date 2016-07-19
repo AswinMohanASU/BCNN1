@@ -139,18 +139,20 @@ for(i = 0; i < N ; i ++){
 
         // Write our data set into the input array in device memory
         //
-        err = clEnqueueWriteBuffer(queue[i], d_fmap0[0], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0",i);
+    if(i == 0) {
+        err = clEnqueueWriteBuffer(queue[0], d_fmap0[0], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL,
+                                   NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0", i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_w1[0], CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1",i);
+        err = clEnqueueWriteBuffer(queue[0], d_w1[0], CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1", i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_norm1[0], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",i);
+        err = clEnqueueWriteBuffer(queue[0], d_norm1[0], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1", i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_debug[0], CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",i);	
-
+        err = clEnqueueWriteBuffer(queue[0], d_debug[0], CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug", i);
+    }
         err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_offset",i);
        
