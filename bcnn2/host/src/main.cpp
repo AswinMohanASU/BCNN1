@@ -217,7 +217,7 @@ int main(void){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                if(fmap1[i][j][k] == 0/*h_fmap1[ k + (j * 34) + (i * (34*34))]*/){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
