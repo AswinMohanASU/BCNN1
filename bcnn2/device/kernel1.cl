@@ -17,7 +17,7 @@ __global int* d_offset
 
 	int fnum1, hei1, wid1;
 	int i1, j1, k1, fmap, w;
-    local act1;
+    local int act1;
      	   fnum1 = get_global_id(2)+ *d_offset;
            hei1 = get_global_id(0);
            wid1 = get_global_id(1);
