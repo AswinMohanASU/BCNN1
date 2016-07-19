@@ -61,13 +61,26 @@ int h_act1[128 * 32 * 32];
 
 int h_debug[3];
 int h_offset[N];
-int i;
+int h_w1_1[N][8 * 3 * 3 * 3];
+int h_norm_1[N][8];
+int i,j,loc,loc1;
 void cleanup();
 
 
 int main(void){
-
-
+    loc =0;
+    for(i = 0 ; i < N ; i ++){
+        for(j=loc; j < loc + 216; j++){
+           h_w1_1[i][j]=h_w1[j];
+           loc++;
+        }
+    }
+    loc=0;
+    for(i =216; i < 432 ;i ++){
+        if(h_w1_1[1][i]==h_w1[i])
+            loc++;
+    }
+    printf("Correct Arrangement %d %d\n",loc,216);
     char* Plt = "Altera";
 
     //Get PlatformID
