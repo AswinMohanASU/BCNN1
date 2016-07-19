@@ -81,7 +81,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_e1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -188,6 +188,9 @@ int main(void){
         err = clSetKernelArg(kernel[i], 4, sizeof(cl_mem), &d_offset[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
+        err = clSetKernelArg(kernel[i], 5, sizeof(cl_mem), &d_act1);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
+
     }
 
     global = {32, 32, 8};
@@ -202,6 +205,8 @@ int main(void){
         //checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
     }
     clFinish(queue[N-1]);
+    err = clEnqueueReadBuffer(queue[N-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
+    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N);
 
     global = {34, 34, 128};
     err = clEnqueueNDRangeKernel(queue[N], kernel[N], 3, NULL, global, NULL, 0, NULL, NULL);
@@ -216,12 +221,12 @@ int main(void){
     int flag=0;
 
     for(unsigned char i = 0; i < 128; i++){
-        for(unsigned char j = 0; j < 34; j++){
-            for(unsigned char k = 0; k < 34; k++){
+        for(unsigned char j = 0; j < 32; j++){
+            for(unsigned char k = 0; k < 32; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                if(act1[i][j][k] == h_act1[ k + (j * 32) + (i * (32*32))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }

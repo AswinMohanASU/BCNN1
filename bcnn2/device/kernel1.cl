@@ -12,16 +12,17 @@ __kernel void conv(__global int *restrict d_fmap0,
 __global int *restrict d_w1,
 __global int *restrict d_norm1,
 __global int *restrict d_debug,
-__global int* d_offset
+__global int* d_offset,
+__global int *restrict d_act1,
 ){
 
 	int fnum1, hei1, wid1;
-	int i1, j1, k1, fmap, w;
+	int i1, j1, k1, fmap, w, index;
     local int act1;
      	   fnum1 = get_global_id(2)+ *d_offset;
            hei1 = get_global_id(0);
            wid1 = get_global_id(1);
-
+index = wid1 + (hei1 * 32) + (fnum1 * 32 * 32);
 if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
             act1 = 0;
@@ -37,6 +38,7 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
                         }
                     }
                 }
+                d_act[index]=act1;
                 // Normalization and non-linearity
                 if(act1 > d_norm1[fnum1])
                     fmap1[fnum1][hei1+1][wid1+1] = 1;
