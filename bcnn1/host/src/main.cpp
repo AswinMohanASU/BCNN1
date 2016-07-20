@@ -135,11 +135,11 @@ int main(void){
     d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
 
-    h_debug = {128,32,32};
+    h_debug = {128,34,34};
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {1, 1, 1};
+    global = {2, 2, 1};
     h_offset[0] = 0;
         for(i = 1; i < N ; i ++)
      		h_offset[i] = h_offset[i-1] + 8;
