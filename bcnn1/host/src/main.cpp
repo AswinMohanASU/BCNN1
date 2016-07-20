@@ -275,7 +275,6 @@ for(i = 0; i < N ; i ++){
             printf("Matrix %d  - %d\n",i,flag);
         flag=0;
     }
-
     printf("\nNo. of Data Correct for fmap1  %d / %d\n",correct,count);
 
 void cleanup();

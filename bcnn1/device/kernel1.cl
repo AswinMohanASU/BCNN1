@@ -40,7 +40,6 @@ if(fnum1 < d_debug[0] && (hei1 > 0 && hei1 < d_debug[1]) && (wid1 > 0 && wid1 < 
                     d_fmap1[index1] = 1;
                 else
                     d_fmap1[index1] = 0;
-
     }
     else
         d_fmap1[index1] = 0;
