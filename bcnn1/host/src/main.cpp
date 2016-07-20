@@ -76,7 +76,11 @@ int main(void){
     for(i = 0 ; i < 128 ; i ++){
         h_norm1[i] = norm1[i];
     }
+
     h_fmap1.reset(128*34*34);
+    for(i = 0 ; i < 128*34*34 ; i ++){
+        h_fmap1[i] = 0;
+    }
     h_act1.reset(128*32*32);
 
     d_fmap0.reset(N);
@@ -132,7 +136,7 @@ int main(void){
     d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
     d_debug[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
     }
-    d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
+    d_fmap1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
 
     h_debug = {128,32,32};
@@ -170,7 +174,10 @@ for(i = 0; i < N ; i ++){
 
         err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_offset",i);
-       
+
+        err = clEnqueueWriteBuffer(queue[i], d_fmap1, CL_FALSE, 0, sizeof(int), &h_fmap1, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap1",i);
+
 
         // Set the arguments to our compute kernel
         //
