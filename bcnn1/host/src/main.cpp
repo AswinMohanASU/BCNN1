@@ -252,12 +252,12 @@ for(i = 0; i < N ; i ++){
     int flag=0;
 
     for(unsigned char i = 0; i < 1; i++){
-        for(unsigned char j = 0; j < 34; j++){
-            for(unsigned char k = 0; k < 34; k++){
+        for(unsigned char j = 0; j < 32; j++){
+            for(unsigned char k = 0; k < 32; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                if(act1[i][j][k] == h_act1[ k + (j * 32) + (i * (32*32))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
@@ -277,7 +277,7 @@ for(i = 0; i < N ; i ++){
 
     printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
 
-    printf("\nsum of fmap1  %d / %d\n",h_fmap1[0]);
+    printf("\nsum of fmap1  %d\n",h_fmap1[0]);
 
 void cleanup();
 }
