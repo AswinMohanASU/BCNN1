@@ -22,7 +22,7 @@
 using namespace std;
 using namespace aocl_utils;
 #define AOCL_ALIGNMENT 64
-#define N 4
+#define N 16
 unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
@@ -222,7 +222,7 @@ for(i = 0; i < N ; i ++){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 24; i++){
+    for(unsigned char i = 0; i < 128; i++){
         for(unsigned char j = 0; j < 34; j++){
             for(unsigned char k = 0; k < 34; k++){
                 count++;
