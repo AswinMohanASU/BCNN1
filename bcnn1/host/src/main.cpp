@@ -164,7 +164,7 @@ int main(void){
 
     // Create the compute kernel in the program we wish to run
     //
-    kernel[N+1] = clCreateKernel(program, "initialize", &err);
+    kernel[N+1] = clCreateKernel(program, "readData", &err);
     checkError(err, "Error: Failed to create compute kernel[%d]!",N+1);
 
     err = clSetKernelArg(kernel[N+1], 0, sizeof(cl_mem), &d_fmap1);
