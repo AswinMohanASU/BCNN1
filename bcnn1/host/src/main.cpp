@@ -102,7 +102,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_e1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -251,7 +251,7 @@ for(i = 0; i < N ; i ++){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
+    for(unsigned char i = 0; i < 1; i++){
         for(unsigned char j = 0; j < 34; j++){
             for(unsigned char k = 0; k < 34; k++){
                 count++;
@@ -262,7 +262,7 @@ for(i = 0; i < N ; i ++){
                     correct++;
                 }
                 else{
-                    printf("Index %d i=%d,j=%d,k=%d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),i,j,k,fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
+                    //printf("Index %d i=%d,j=%d,k=%d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),i,j,k,fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
                     flag++;
                 }
 
@@ -276,6 +276,8 @@ for(i = 0; i < N ; i ++){
     }
 
     printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
+
+    printf("\nsum of fmap1  %d / %d\n",h_fmap1[0]);
 
 void cleanup();
 }

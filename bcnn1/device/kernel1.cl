@@ -49,8 +49,10 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
  }
 
  __kernel void readData(__global int *restrict d_fmap1){
+     int sum=0;
      for(int i=0; i< 128 * 34 * 34; i++)
-         d_fmap1[i]=fmap1[i];
+         sum += fmap[i];
+         d_fmap1[0]=sum;
  }
 
 
