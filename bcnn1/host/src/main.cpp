@@ -27,10 +27,6 @@ unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
 
-//cl_mem x;                  				// device memory used for the input array
-cl_mem d_fmap0[N],d_norm1[N],d_w1[N],d_fmap1,d_act1;
-cl_mem d_debug[N];
-cl_mem d_offset[N];
 //int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
 
 size_t global[3];                       // global domain size for our calculation
@@ -69,11 +65,10 @@ void cleanup();
 
 
 int main(void){
-    loc =0;
 
     h_fmap0.reset(3*34*34);
-    for(unsigned i = 0; i < 3*34*34; ++i) {
-        h_fmap0[i] = fmap[i];
+    for(i = 0; i < 3*34*34; ++i) {
+        h_fmap0[i] = fmap0[i];
     }
     h_w1.reset(128*3*3*3);
     for(i = 0 ; i < 128*3*3*3 ; i ++){
