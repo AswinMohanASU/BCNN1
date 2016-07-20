@@ -22,7 +22,7 @@
 using namespace std;
 using namespace aocl_utils;
 #define AOCL_ALIGNMENT 64
-#define N 16
+#define N 32
 unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
@@ -143,10 +143,10 @@ int main(void){
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {32, 32, 8};
+    global = {32, 32, 4};
     h_offset[0] = 0;
         for(i = 1; i < N ; i ++)
-     		h_offset[i] = h_offset[i-1] + 8;
+     		h_offset[i] = h_offset[i-1] + 4;
 
     queue[N] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
     checkError(err, "Error: Failed to create a command queue[%d]!",N);
