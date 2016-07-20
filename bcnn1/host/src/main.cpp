@@ -48,10 +48,10 @@ int i,j;
 scoped_array<cl_mem> d_fmap0;
 scoped_array<cl_mem> d_norm1;
 scoped_array<cl_mem> d_w1;
-scoped_array<cl_mem> d_fmap1;
-scoped_array<cl_mem> d_act1;
 scoped_array<cl_mem> d_debug;
 scoped_array<cl_mem> d_offset;
+cl_mem d_fmap1;
+cl_mem d_act1;
 
 scoped_aligned_ptr<int> h_fmap0;
 scoped_aligned_ptr<int> h_w1;
@@ -59,8 +59,6 @@ scoped_aligned_ptr<int> h_norm1;
 scoped_aligned_ptr<int> h_fmap1;
 scoped_aligned_ptr<int> h_act1;
 
-cl_mem d_debug[N];
-cl_mem d_offset[N];
 void cleanup();
 
 
