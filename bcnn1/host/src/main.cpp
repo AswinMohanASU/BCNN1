@@ -138,7 +138,7 @@ int main(void){
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
 
     h_debug = {128,32,32};
-
+    printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
     global = {32, 32, 8};
@@ -198,8 +198,8 @@ for(i = 0; i < N ; i ++){
         err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_fmap1);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
 
-    }   
-
+    }
+    printf("Completed Setting Arguments \n");
             err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[0]");
     
