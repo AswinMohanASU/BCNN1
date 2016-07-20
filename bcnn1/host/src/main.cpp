@@ -210,9 +210,9 @@ for(i = 0; i < N ; i ++){
             }
     clFinish(queue[N-1]);
 
-    err = clEnqueueReadBuffer(queue[i-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue[i-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, h_act1, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
-    err = clEnqueueReadBuffer(queue[i-1], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, &h_fmap1, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue[i-1], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
     printf("Completed Execution \n");
 
