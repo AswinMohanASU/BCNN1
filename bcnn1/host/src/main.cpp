@@ -22,7 +22,7 @@
 using namespace std;
 using namespace aocl_utils;
 #define AOCL_ALIGNMENT 64
-#define N 1
+#define N 16
 unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
@@ -139,7 +139,7 @@ int main(void){
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {34, 34, 1};
+    global = {34, 34, 8};
     h_offset[0] = 0;
         for(i = 1; i < N ; i ++)
      		h_offset[i] = h_offset[i-1] + 8;
@@ -222,7 +222,7 @@ for(i = 0; i < N ; i ++){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 1; i++){
+    for(unsigned char i = 0; i < 128; i++){
         for(unsigned char j = 0; j < 32; j++){
             for(unsigned char k = 0; k < 32; k++){
                 count++;
