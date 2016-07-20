@@ -139,7 +139,7 @@ int main(void){
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {2, 2, 1};
+    global = {34, 34, 1};
     h_offset[0] = 0;
         for(i = 1; i < N ; i ++)
      		h_offset[i] = h_offset[i-1] + 8;
