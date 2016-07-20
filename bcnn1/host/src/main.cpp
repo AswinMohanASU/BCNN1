@@ -233,7 +233,7 @@ for(i = 0; i < N ; i ++){
                     correct++;
                 }
                 else{
-                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
                     flag++;
                 }
 
