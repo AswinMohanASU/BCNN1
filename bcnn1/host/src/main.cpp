@@ -136,14 +136,14 @@ int main(void){
     d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
     d_debug[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
     }
-    d_fmap1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 128 * 34 * 34, NULL, NULL);
+    d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
 
     h_debug = {128,32,32};
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {32, 32, 8};
+    global = {34, 34, 8};
     h_offset[0] = 0;
         for(i = 1; i < N ; i ++)
      		h_offset[i] = h_offset[i-1] + 8;
@@ -174,9 +174,6 @@ for(i = 0; i < N ; i ++){
 
         err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_offset",i);
-
-        err = clEnqueueWriteBuffer(queue[i], d_fmap1, CL_FALSE, 0, sizeof(int), &h_fmap1, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap1",i);
 
 
         // Set the arguments to our compute kernel
@@ -229,7 +226,7 @@ for(i = 0; i < N ; i ++){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 3; i++){
+    for(unsigned char i = 0; i < 128; i++){
         for(unsigned char j = 0; j < 34; j++){
             for(unsigned char k = 0; k < 34; k++){
                 count++;
