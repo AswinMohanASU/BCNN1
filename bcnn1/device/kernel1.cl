@@ -9,16 +9,21 @@ __global int *restrict d_fmap1
 ){
 
 	int fnum1, hei1, wid1;
-	int i1, j1, k1, temp, fmap, w, act_index, act_index1,index;
+	int i1, j1, k1, temp, fmap, w, act_index, act_index1,fmap_index,fmap_index1;
 
      	   fnum1 = get_global_id(2)+ *d_offset;
            hei1 = get_global_id(0);
            wid1 = get_global_id(1);
-           index = wid1 + (hei1 * 34) + (fnum1 * 34 * 34);
 
-if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
            act_index = wid1 + (hei1 * 32) + (fnum1 * 32 * 32);
            act_index1 = (wid1+1) + ((hei1+1) * 34) + (fnum1 * 34 * 34);
+           fmap_index = (wid1) + ((hei1) * 34) + (fnum1 * 34 * 34);
+           fmap_index1 = (wid1+2) + ((hei1+2) * 34) + (fnum1 * 34 * 34);
+
+           d_fmap1[fmap_index] = 0;
+           d_fmap1[fmap_index1] = 0;
+
+if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
             d_act1[act_index] = 0;
             for(i1 = 0; i1 < 3; i1++){
@@ -43,7 +48,5 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
                     d_fmap1[act_index1] = 0;
 
     }
-    else
-        d_fmap1[index] = 0;
-}
+ }
 
