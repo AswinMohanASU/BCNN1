@@ -1,14 +1,11 @@
-__global int fmap1[128*34*34];
-__kernel void initialize(){
-    for(int i=0; i< 128 * 34 * 34; i++)
-        fmap1[i]=0;
-}
+
 __kernel void conv( __global int *restrict d_fmap0,
 __global int *restrict d_w1,
 __global int *restrict d_norm1,
 __global int *restrict d_debug,
 __global int* d_offset,
-__global int *restrict d_act1
+__global int *restrict d_act1,
+__global int *restrict d_fmap1
 ){
 
 	int fnum1, hei1, wid1;
@@ -17,9 +14,8 @@ __global int *restrict d_act1
      	   fnum1 = get_global_id(2)+ *d_offset;
            hei1 = get_global_id(0);
            wid1 = get_global_id(1);
-
            index = wid1 + (hei1 * 32) + (fnum1 * 32 * 32);
-           index1 = (wid1+1) + ((hei1+1) * 34) + (fnum1 * 34 * 34);
+           index1 = (wid1+1) + ((hei1+1) * 32) + (fnum1 * 32 * 32);
 
 if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
@@ -41,18 +37,10 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
                 // Normalization and non-linearity
                 if(d_act1[index] > d_norm1[fnum1])
-                    fmap1[index1] = 1;
+                    d_fmap1[index1] = 1;
                 else
-                    fmap1[index1] = 0;
+                    d_fmap1[index1] = 0;
 
     }
- }
-
- __kernel void readData(__global int *restrict d_fmap1){
-     int sum=0;
-     for(int i=0; i< 128 * 34 * 34; i++)
-         sum += fmap1[i];
-         d_fmap1[0]=sum;
- }
-
+}
 
