@@ -1,5 +1,5 @@
 __global int fmap1[128*34*34];
-__kennel void initialize(){
+__kernel void initialize(){
     for(int i=0; i< 128 * 34 * 34; i++)
         fmap1[i]=0;
 }
