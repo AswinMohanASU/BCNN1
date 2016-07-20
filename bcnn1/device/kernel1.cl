@@ -9,7 +9,7 @@ __global int *restrict d_fmap1
 ){
 
 	int fnum1, hei1, wid1;
-	int i1, j1, k1, temp, fmap, w, act_index, act_index1;
+	int i1, j1, k1, temp, fmap, w, act_index, act_index1,index;
 
      	   fnum1 = get_global_id(2)+ *d_offset;
            hei1 = get_global_id(0);
@@ -38,7 +38,7 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
                 }
 
                 // Normalization and non-linearity
-                if(d_act1[index] > d_norm1[fnum1])
+                if(d_act1[act_index] > d_norm1[fnum1])
                     d_fmap1[act_index1] = 1;
                 else
                     d_fmap1[act_index1] = 0;
