@@ -36,7 +36,7 @@ if(fnum1 < d_debug[0] && (hei1 > 0 && hei1 < d_debug[1]) && (wid1 > 0 && wid1 < 
                         }
                     }
                 }
-                d_act1[index]
+                d_act1[index]=act1;
                 // Normalization and non-linearity
                 if(d_act1[index] > d_norm1[fnum1])
                     d_fmap1[index1] = 1;

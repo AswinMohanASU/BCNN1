@@ -222,7 +222,7 @@ for(i = 0; i < N ; i ++){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
+    for(unsigned char i = 0; i < 1; i++){
         for(unsigned char j = 0; j < 34; j++){
             for(unsigned char k = 0; k < 34; k++){
                 count++;
