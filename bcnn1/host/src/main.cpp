@@ -265,7 +265,6 @@ for(i = 0; i < N ; i ++){
                     //printf("Index %d i=%d,j=%d,k=%d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),i,j,k,fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
                     flag++;
                 }
-
               //  if(flag > 0)
               //      printf("Matrix %d %d %d - %d\n",i,j,k,flag);
             }
