@@ -17,11 +17,6 @@ __global int *restrict d_fmap1
 
            act_index = wid1 + (hei1 * 32) + (fnum1 * 32 * 32);
            act_index1 = (wid1+1) + ((hei1+1) * 34) + (fnum1 * 34 * 34);
-           fmap_index = (wid1) + ((hei1) * 34) + (fnum1 * 34 * 34);
-           fmap_index1 = (wid1+2) + ((hei1+2) * 34) + (fnum1 * 34 * 34);
-
-           d_fmap1[fmap_index] = 0;
-           d_fmap1[fmap_index1] = 0;
 
 if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
