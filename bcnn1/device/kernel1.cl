@@ -31,6 +31,8 @@ if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
                             d_act1[index] = d_act1[index] + temp;
 
+                            printf("index %d index1 %d fmap %d w %d temp %d d_act1 %d\n",index,index1,fmap,w,temp,d_act1[index]);
+
                         }
                     }
                 }
