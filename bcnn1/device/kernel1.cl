@@ -31,7 +31,7 @@ if(fnum1 < d_debug[0] && (hei1 > 0 && hei1 < d_debug[1]) && (wid1 > 0 && wid1 < 
 
                             act1 = act1 + temp;
 
-                            printf("index %d index1 %d fmap %d w %d temp %d act1 %d\n",index,index1,fmap,w,temp,act1);
+                            //printf("index %d index1 %d fmap %d w %d temp %d act1 %d\n",index,index1,fmap,w,temp,act1);
 
                         }
                     }
