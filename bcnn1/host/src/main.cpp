@@ -36,9 +36,9 @@ cl_platform_id platform;                // compute platform id
 cl_device_id device;                	// compute device id
 cl_context context;                 	// compute context
 
-cl_command_queue queue[N];             // compute command queue
+cl_command_queue queue[N+2];             // compute command queue
 cl_program program;                	    // compute program
-cl_kernel kernel[N];                   	// compute kernel
+cl_kernel kernel[N+2];                   	// compute kernel
 
 
 int h_debug[3];
@@ -143,11 +143,32 @@ int main(void){
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {34, 34, 8};
+    global = {32, 32, 8};
     h_offset[0] = 0;
         for(i = 1; i < N ; i ++)
      		h_offset[i] = h_offset[i-1] + 8;
-     	
+
+    queue[N] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+    checkError(err, "Error: Failed to create a command queue[%d]!",N);
+
+    // Create the compute kernel in the program we wish to run
+    //
+    kernel[N] = clCreateKernel(program, "initialize", &err);
+    checkError(err, "Error: Failed to create compute kernel[%d]!",N);
+
+    err =clEnqueueTask(queue[N], kernel[N], 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[%d]",N);
+
+    queue[N+1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+    checkError(err, "Error: Failed to create a command queue[%d]!",N+1);
+
+    // Create the compute kernel in the program we wish to run
+    //
+    kernel[N+1] = clCreateKernel(program, "initialize", &err);
+    checkError(err, "Error: Failed to create compute kernel[%d]!",N+1);
+
+    err = clSetKernelArg(kernel[N+1], 0, sizeof(cl_mem), &d_fmap1);
+    checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap1",N+1);
 
 for(i = 0; i < N ; i ++){
         queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
@@ -197,10 +218,8 @@ for(i = 0; i < N ; i ++){
         err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_act1);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
 
-        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_fmap1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap1",i);
-
     }
+    clFinish(queue[N]);
     printf("Completed Setting Arguments \n");
             err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[0]");
@@ -214,10 +233,16 @@ for(i = 0; i < N ; i ++){
             }
     clFinish(queue[N-1]);
 
-    err = clEnqueueReadBuffer(queue[i-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, h_act1, 0, NULL, NULL);
+    err =clEnqueueTask(queue[N+1], kernel[N+1], 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[%d]",N+1);
+
+    err = clEnqueueReadBuffer(queue[N-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, h_act1, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
-    err = clEnqueueReadBuffer(queue[i-1], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
-    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
+
+    clFinish(queue[N+1]);
+
+    err = clEnqueueReadBuffer(queue[N+1], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
+    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N+1);
     printf("Completed Execution \n");
 
     printf("Complete \n");
