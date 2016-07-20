@@ -98,7 +98,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_e1", device);
+    string binary_file = getBoardBinaryFile("kernel_b1", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -223,12 +223,12 @@ for(i = 0; i < N ; i ++){
     int flag=0;
 
     for(unsigned char i = 0; i < 128; i++){
-        for(unsigned char j = 0; j < 34; j++){
-            for(unsigned char k = 0; k < 34; k++){
+        for(unsigned char j = 0; j < 32; j++){
+            for(unsigned char k = 0; k < 32; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                if(act1[i][j][k] == h_act1[ k + (j * 32) + (i * (32*32))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
@@ -248,6 +248,36 @@ for(i = 0; i < N ; i ++){
 
     printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
 
+    correct=0;
+     count=0;
+     flag=0;
+
+    for(unsigned char i = 0; i < 128; i++){
+        for(unsigned char j = 0; j < 34; j++){
+            for(unsigned char k = 0; k < 34; k++){
+                count++;
+                //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
+
+                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+                    correct++;
+                }
+                else{
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+                    flag++;
+                }
+
+                //  if(flag > 0)
+                //      printf("Matrix %d %d %d - %d\n",i,j,k,flag);
+            }
+        }
+        if(flag > 0)
+            printf("Matrix %d  - %d\n",i,flag);
+        flag=0;
+    }
+
+    printf("\nNo. of Data Correct for fmap1  %d / %d\n",correct,count);
+
 void cleanup();
 }
 void cleanup(){
@@ -260,6 +290,7 @@ for(i = 0; i < N ; i ++){
     clReleaseCommandQueue(queue[i]);
 }
     clReleaseMemObject(d_act1);
+    clReleaseMemObject(d_fmap1);
     clReleaseProgram(program);
     clReleaseContext(context);
 
