@@ -45,14 +45,9 @@ cl_program program;                	    // compute program
 cl_kernel kernel[N];                   	// compute kernel
 
 
-int h_fmap1[128 * 34 * 34];
-int h_act1[128 * 32 * 32];
-
 int h_debug[3];
 int h_offset[N];
-int h_w1_1[N][8 * 3 * 3 * 3];
-int h_norm1_1[N][8];
-int i,j,loc,loc1;
+int i,j;
 
 scoped_array<cl_mem> d_fmap0;
 scoped_array<cl_mem> d_norm1;
