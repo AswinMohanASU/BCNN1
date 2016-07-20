@@ -15,7 +15,7 @@ __global int *restrict d_fmap1
            hei1 = get_global_id(0);
            wid1 = get_global_id(1);
            index = wid1 + (hei1 * 32) + (fnum1 * 32 * 32);
-           index1 = (wid1+1) + ((hei1+1) * 32) + (fnum1 * 32 * 32);
+           index1 = (wid1+1) + ((hei1+1) * 34) + (fnum1 * 34 * 34);
 
 if(fnum1 < d_debug[0] && hei1 < d_debug[1] && wid1 < d_debug[2]){
 
