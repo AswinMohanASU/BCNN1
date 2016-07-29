@@ -1,3 +1,30 @@
+int poolnorm (int a1, int a2, int a3, int a4, int norm){
+	int s1,s2,s3;
+	int dout;
+
+	if (a1 >= a2)
+		s1 = a1;
+	else
+		s1 = a2;
+
+	if (a3 >= a4)
+		s2 = a3;
+	else
+		s2 = a4;
+
+	if (s1 >= s2)
+		s3 = s1;
+	else
+		s3 = s2;
+
+	if (norm >= s3)
+		dout = 0;
+	else
+		dout = 1;
+
+	return dout;
+}
+
 __kernel void conv( __global int *restrict d_fmap0,
 __global int *restrict d_w1,
 __global int *restrict d_norm1,
