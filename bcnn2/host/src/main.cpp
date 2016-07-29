@@ -74,10 +74,10 @@ int main(void){
     }
     h_fmap1.reset(128*34*34);
 
-//    d_fmap0.reset();
-//    d_norm1.reset();
-//    d_w1.reset();
-//    d_dim.reset();
+    d_fmap0.reset(1);
+    d_norm1.reset(1);
+    d_w1.reset(1);
+    d_dim.reset(1);
     char* Plt = "Altera";
 
     //Get PlatformID
