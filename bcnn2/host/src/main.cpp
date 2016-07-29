@@ -118,7 +118,9 @@ int main(void){
 
     // Create the input and output arrays in device memory for our calculation
     //
-    d_fmap0 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
+
+    d_fmap0[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
+    d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     d_w1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
     d_norm1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
     d_dim = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
