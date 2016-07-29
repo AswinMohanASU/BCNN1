@@ -22,7 +22,7 @@
 using namespace std;
 using namespace aocl_utils;
 #define AOCL_ALIGNMENT 64
-#define N 16
+#define N 1
 unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
@@ -41,23 +41,23 @@ cl_program program;                	    // compute program
 cl_kernel kernel[N];                   	// compute kernel
 
 
-int h_debug[3];
-int h_offset[N];
+int h_dim[3];
+//int h_offset[N];
 int i,j;
 
 scoped_array<cl_mem> d_fmap0;
 scoped_array<cl_mem> d_norm1;
 scoped_array<cl_mem> d_w1;
-scoped_array<cl_mem> d_debug;
-scoped_array<cl_mem> d_offset;
+scoped_array<cl_mem> d_dim;
+//scoped_array<cl_mem> d_offset;
 cl_mem d_fmap1;
-cl_mem d_act1;
+//cl_mem d_act1;
 
 scoped_aligned_ptr<int> h_fmap0;
 scoped_aligned_ptr<int> h_w1;
 scoped_aligned_ptr<int> h_norm1;
 scoped_aligned_ptr<int> h_fmap1;
-scoped_aligned_ptr<int> h_act1;
+//scoped_aligned_ptr<int> h_act1;
 
 void cleanup();
 
@@ -77,13 +77,13 @@ int main(void){
         h_norm1[i] = norm1[i];
     }
     h_fmap1.reset(128*34*34);
-    h_act1.reset(128*32*32);
+ //   h_act1.reset(128*32*32);
 
     d_fmap0.reset(N);
     d_norm1.reset(N);
     d_w1.reset(N);
-    d_debug.reset(N);
-    d_offset.reset(N);
+    d_dim.reset(N);
+//    d_offset.reset(N);
     char* Plt = "Altera";
 
     //Get PlatformID
@@ -98,7 +98,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_b1", device);
+    string binary_file = getBoardBinaryFile("kernel_b2", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -129,20 +129,20 @@ int main(void){
     d_fmap0[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
     d_w1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
     d_norm1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
-    d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
-    d_debug[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
+   // d_offset[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int), NULL, NULL);
+    d_dim[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
     }
     d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
+ //   d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
 
-    h_debug = {128,33,33};
+    h_dim = {128,33,33};
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
-    global = {34, 34, 8};
-    h_offset[0] = 0;
-        for(i = 1; i < N ; i ++)
-     		h_offset[i] = h_offset[i-1] + 8;
+    global = {34, 34, 128};
+    // h_offset[0] = 0;
+    //     for(i = 1; i < N ; i ++)
+    //  		h_offset[i] = h_offset[i-1] + 8;
      	
 
 for(i = 0; i < N ; i ++){
@@ -165,11 +165,11 @@ for(i = 0; i < N ; i ++){
         err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",i);
 
-        err = clEnqueueWriteBuffer(queue[i], d_debug[i], CL_FALSE, 0, sizeof(int) * 3, h_debug, 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_dim[i], CL_FALSE, 0, sizeof(int) * 3, h_dim, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",i);	
 
-        err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_offset",i);
+        // err = clEnqueueWriteBuffer(queue[i], d_offset[i], CL_FALSE, 0, sizeof(int), &h_offset[i], 0, NULL, NULL);
+        // checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_offset",i);
        
 
         // Set the arguments to our compute kernel
@@ -184,14 +184,14 @@ for(i = 0; i < N ; i ++){
         err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_norm1[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",i);
 
-        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_debug[i]);
+        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_dim[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_debug",i);
 
-        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_offset[i]);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
+        // err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_offset[i]);
+        // checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_offset",i);
 
-        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_act1);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
+        // err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_act1);
+        // checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
 
         err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_fmap1);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
@@ -210,10 +210,10 @@ for(i = 0; i < N ; i ++){
             }
     clFinish(queue[N-1]);
 
-    err = clEnqueueReadBuffer(queue[i-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, h_act1, 0, NULL, NULL);
-    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
+    // err = clEnqueueReadBuffer(queue[i-1], d_act1, CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, h_act1, 0, NULL, NULL);
+    // checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
     err = clEnqueueReadBuffer(queue[i-1], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
-    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
+    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_fmap1",N-1);
     printf("Completed Execution \n");
 
     printf("Complete \n");
@@ -222,35 +222,35 @@ for(i = 0; i < N ; i ++){
     int count=0;
     int flag=0;
 
-    for(unsigned char i = 0; i < 128; i++){
-        for(unsigned char j = 0; j < 32; j++){
-            for(unsigned char k = 0; k < 32; k++){
-                count++;
-                //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
+    // for(unsigned char i = 0; i < 128; i++){
+    //     for(unsigned char j = 0; j < 32; j++){
+    //         for(unsigned char k = 0; k < 32; k++){
+    //             count++;
+    //             //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(act1[i][j][k] == h_act1[ k + (j * 32) + (i * (32*32))]){
-                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
-                    correct++;
-                }
-                else{
-                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
-                    flag++;
-                }
+    //             if(act1[i][j][k] == h_act1[ k + (j * 32) + (i * (32*32))]){
+    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+    //                 correct++;
+    //             }
+    //             else{
+    //                 printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+    //                 flag++;
+    //             }
 
-              //  if(flag > 0)
-              //      printf("Matrix %d %d %d - %d\n",i,j,k,flag);
-            }
-        }
-        if(flag > 0)
-            printf("Matrix %d  - %d\n",i,flag);
-        flag=0;
-    }
+    //           //  if(flag > 0)
+    //           //      printf("Matrix %d %d %d - %d\n",i,j,k,flag);
+    //         }
+    //     }
+    //     if(flag > 0)
+    //         printf("Matrix %d  - %d\n",i,flag);
+    //     flag=0;
+    // }
 
-    printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
+    // printf("\nNo. of Data Correct for act1  %d / %d\n",correct,count);
 
-    correct=0;
-     count=0;
-     flag=0;
+    // correct=0;
+    //  count=0;
+    //  flag=0;
 
     for(unsigned char i = 0; i < 128; i++){
         for(unsigned char j = 0; j < 34; j++){
@@ -263,7 +263,7 @@ for(i = 0; i < N ; i ++){
                     correct++;
                 }
                 else{
-                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
                     flag++;
                 }
 
@@ -288,7 +288,8 @@ for(i = 0; i < N ; i ++){
     clReleaseKernel(kernel[i]);
     clReleaseCommandQueue(queue[i]);
 }
-    clReleaseMemObject(d_act1);
+    free(h_fmap1);
+    //clReleaseMemObject(d_act1);
     clReleaseMemObject(d_fmap1);
     clReleaseProgram(program);
     clReleaseContext(context);
