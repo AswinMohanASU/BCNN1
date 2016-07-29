@@ -27,6 +27,8 @@ unsigned int correct;
 cl_int err;
 cl_uint numPlatforms;
 
+//int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
+
 size_t global[3];                       // global domain size for our calculation
 size_t local[3];                       	// local domain size for our calculation
 
@@ -74,10 +76,10 @@ int main(void){
     }
     h_fmap1.reset(128*34*34);
 
-    d_fmap0.reset(1);
-    d_norm1.reset(1);
-    d_w1.reset(1);
-    d_dim.reset(1);
+    d_fmap0.reset(N);
+    d_norm1.reset(N);
+    d_w1.reset(N);
+    d_dim.reset(N);
     char* Plt = "Altera";
 
     //Get PlatformID
@@ -119,70 +121,76 @@ int main(void){
     // Create the input and output arrays in device memory for our calculation
     //
 
+    for(i = 0; i < N ; i ++){
     d_fmap0[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
+    d_w1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
+    d_norm1[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
+    d_dim[i] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
+    }
     d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    d_w1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
-    d_norm1 = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
-    d_dim = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
-    d_fmap1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 128 * 34 * 34, NULL, NULL);
-    
+
     h_dim = {128,33,33};
     printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
     global = {34, 34, 128};
-        queue[0] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkError(err, "Error: Failed to create a command queue[%d]!",i);  
-        
+
+for(i = 0; i < N ; i ++){
+        queue[i] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",i);
+
         // Create the compute kernel in the program we wish to run
         //
-        kernel[0] = clCreateKernel(program, "conv", &err);
+        kernel[i] = clCreateKernel(program, "conv", &err);
         checkError(err, "Error: Failed to create compute kernel[%d]!",i);
 
         // Write our data set into the input array in device memory
         //
-        err = clEnqueueWriteBuffer(queue[0], d_fmap0, CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_fmap0[i], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_fmap0",i);
 
-        err = clEnqueueWriteBuffer(queue[0], d_w1, CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_w1[i], CL_FALSE, 0, sizeof(int) * 128 * 3 * 3 * 3, h_w1, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w1",i);
 
-        err = clEnqueueWriteBuffer(queue[0], d_norm1, CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
+        err = clEnqueueWriteBuffer(queue[i], d_norm1[i], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",i);
 
-        err = clEnqueueWriteBuffer(queue[0], d_dim, CL_FALSE, 0, sizeof(int) * 3, h_dim, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",i);	
-      
+        err = clEnqueueWriteBuffer(queue[i], d_dim[i], CL_FALSE, 0, sizeof(int) * 3, h_dim, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",i);
+
         // Set the arguments to our compute kernel
         //
         unsigned argi = 0;
-        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_fmap0);
+        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_fmap0[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap0",i);
 
-        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_w1);
+        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_w1[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w1",i);
 
-        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_norm1);
+        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_norm1[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",i);
 
-        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_dim);
+        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_dim[i]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_debug",i);
 
-        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_fmap1);
+        err = clSetKernelArg(kernel[i], argi++, sizeof(cl_mem), &d_fmap1);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",i);
-    
+
+    }
     printf("Completed Setting Arguments \n");
             err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
             checkError(err, "Error: Failed to execute kernel[0]");
-    
-            clFinish(queue[0]);
-            //err = clEnqueueNDRangeKernel(queue[], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
-            //checkError(err, "Error: Failed to execute kernel[%d]",i);
+
+	for(i = 1; i < N ; i ++){
+            clFinish(queue[i-1]);
+            err = clEnqueueNDRangeKernel(queue[i], kernel[i], 3, NULL, global, NULL, 0, NULL, NULL);
+            checkError(err, "Error: Failed to execute kernel[%d]",i);
             //err = clEnqueueReadBuffer(queue[i-1], d_act1[i-1], CL_TRUE, 0, sizeof(int) * 128 * 32 * 32, &h_act1[i-1], 0, NULL, NULL);
             //checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",i-1);
-    
+            }
+    clFinish(queue[N-1]);
 
-    err = clEnqueueReadBuffer(queue[0], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue[i-1], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
     printf("Completed Execution \n");
 
@@ -222,17 +230,14 @@ void cleanup();
 void cleanup(){
 
 for(i = 0; i < N ; i ++){
+    clReleaseMemObject(d_fmap0[i]);
+    clReleaseMemObject(d_w1[i]);
+    clReleaseMemObject(d_norm1[i]);
     clReleaseKernel(kernel[i]);
     clReleaseCommandQueue(queue[i]);
 }
-    clReleaseMemObject(d_fmap0);
-    clReleaseMemObject(d_w1);
-    clReleaseMemObject(d_norm1);
-    clReleaseMemObject(d_dim);
-    clReleaseMemObject(d_fmap1);
-    
 	free(h_fmap1);
-    
+    clReleaseMemObject(d_fmap1);
     clReleaseProgram(program);
     clReleaseContext(context);
 
