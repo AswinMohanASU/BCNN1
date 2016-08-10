@@ -28,7 +28,7 @@ int poolnorm (int a1, int a2, int a3, int a4, int norm){
 __kernel void conv( __global int *restrict d_fmap0,
 __global int *restrict d_w1,
 __global int *restrict d_norm1,
-__global int *restrict d_dim,
+__global int *restrict d_dim1,
 __global int *restrict d_fmap1
 ){
 
@@ -41,7 +41,7 @@ __global int *restrict d_fmap1
 
            index = (wid1) + ((hei1) * 34) + (fnum1 * 34 * 34);
 
-if(fnum1 < d_dim[0] && (hei1 > 0 && hei1 < d_dim[1]) && (wid1 > 0 && wid1 < d_dim[2])){
+if(fnum1 < d_dim1[0] && (hei1 > 0 && hei1 < d_dim1[1]) && (wid1 > 0 && wid1 < d_dim1[2])){
             
             act1 = 0;
             for(i1 = 0; i1 < 3; i1++){
@@ -67,4 +67,66 @@ if(fnum1 < d_dim[0] && (hei1 > 0 && hei1 < d_dim[1]) && (wid1 > 0 && wid1 < d_di
     }
     else
         d_fmap1[index] = 0;
+}
+
+__kernel void layertwo( __global int *restrict d_fmap1,
+__global int *restrict d_w2,
+__global int *restrict d_norm2,
+__global int *restrict d_act2,
+__global bool* d_fmap2
+){
+          __local int act2[128 * 32 * 32];
+          int fnum2, hei2, wid2, index,act2_tp, index2;
+          int i2, j2, k2, fmap, w;
+
+           fnum2 = get_global_id(2);
+           hei2 = get_global_id(0);
+           wid2 = get_global_id(1);
+
+           index = (wid2) + ((hei2) * 32) + (fnum2 * 32 * 32);
+
+           act2[index] = 0;
+      for(i2 = 0; i2 < 128; i2++){
+          for(j2 = 0; j2 < 3; j2++){
+            for(k2 = 0; k2 < 3; k2++){
+              
+              fmap = ((wid2+k2) + ((hei2+j2) * 34) + (i2 * (34 * 34)));
+              
+              w = (k2 + (j2 * 3) + (i2 * 3 * 3) + (fnum2 * 3 * 3 * 128));
+
+              act2_tp = !(d_fmap1[fmap] ^ d_w2[w]);
+
+              act2[index] = act2[index] + act2_tp;
+
+              //printf("index=%d fmap1=%d w2=%d act2_tp=%d d_act2=%d\n",index,d_fmap1[fmap],d_w2[w],act2_tp,d_act2[index]);
+
+            }
+          }
+        }
+
+        d_act2[index] = act2[index];
+        // Max pooling, normalization and non-linearity
+        
+        if(wid2 < 18 && hei2 < 18){
+          d_fmap2[(wid2) + ((hei2) * 18) + (fnum2 * 18 * 18)] = 0;
+          //printf("index2=%d\n",(wid2) + ((hei2) * 18) + (fnum2 * 18 * 18));
+        }
+        
+        if (hei2%2==1 & wid2%2==1)
+        {
+          //swap? N
+          
+          index2 = ((wid2>>1)+1) + (((hei2>>1)+1) * 18) + (fnum2 * 18 * 18);
+          
+          d_fmap2[index2] = poolnorm(act2[index],
+                                   act2[(wid2) + ((hei2-1) * 32) + (fnum2 * 32 * 32)],
+                                   act2[(wid2-1) + ((hei2) * 32) + (fnum2 * 32 * 32)],
+                                   act2[(wid2-1) + ((hei2-1) * 32) + (fnum2 * 32 * 32)],
+                                   d_norm2[fnum2]);
+
+          //printf("index2=%d\n",index2);
+          //printf("index=%d index2=%d hei2=%d wid2=%d act2=%d d_fmap2=%d \n",index,index2,hei2,wid2,act2[index],d_fmap2[index2]);
+
+        }
+
 }

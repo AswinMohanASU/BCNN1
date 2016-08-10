@@ -21,7 +21,7 @@
 #include "data.h"
  
  using namespace aocl_utils;
-#define N 1
+#define N 2
 
 unsigned int correct;
 cl_int err;
@@ -30,25 +30,30 @@ cl_uint numPlatforms;
 //int *X1 = (int*) memalign ( AOCL_ALIGNMENT, (sizeof(int)));
 
 size_t global[3];                       // global domain size for our calculation
-size_t local[3];                       	// local domain size for our calculation
+size_t local[3];                        // local domain size for our calculation
 
 cl_platform_id platform;                // compute platform id
-cl_device_id device;                	// compute device id
-cl_context context;                 	// compute context
+cl_device_id device;                    // compute device id
+cl_context context;                     // compute context
 
 cl_command_queue queue[N];             // compute command queue
-cl_program program;                	    // compute program
-cl_kernel kernel[N];                   	// compute kernel
+cl_program program;                     // compute program
+cl_kernel kernel[N];                    // compute kernel
 
 
-int h_dim[3];
+int h_dim1[3];
+
 int i,j;
 
 scoped_array<cl_mem> d_fmap0;
 scoped_array<cl_mem> d_norm1;
 scoped_array<cl_mem> d_w1;
-scoped_array<cl_mem> d_dim;
+scoped_array<cl_mem> d_dim1;
 cl_mem d_fmap1;
+
+scoped_array<cl_mem> d_norm2;
+scoped_array<cl_mem> d_w2;
+cl_mem d_fmap2,d_act2;
 
 
 scoped_aligned_ptr<int> h_fmap0;
@@ -56,12 +61,18 @@ scoped_aligned_ptr<int> h_w1;
 scoped_aligned_ptr<int> h_norm1;
 scoped_aligned_ptr<int> h_fmap1;
 
+scoped_aligned_ptr<int> h_w2;
+scoped_aligned_ptr<int> h_norm2;
+scoped_aligned_ptr<int> h_act2;
+scoped_aligned_ptr<bool> h_fmap2;
+
 
 void cleanup();
 
 
 int main(void){
 
+//Layer 1
     h_fmap0.reset(3*34*34);
     for(i = 0; i < 3*34*34; ++i) {
         h_fmap0[i] = fmap0[i];
@@ -79,7 +90,22 @@ int main(void){
     d_fmap0.reset(1);
     d_norm1.reset(1);
     d_w1.reset(1);
-    d_dim.reset(1);
+    d_dim1.reset(1);
+
+//Layer 2
+    h_w2.reset(128*128*3*3);
+    for(i = 0 ; i < 128*128*3*3 ; i ++){
+        h_w2[i] = w2[i];
+    }
+    h_norm2.reset(128);
+    for(i = 0 ; i < 128 ; i ++){
+        h_norm2[i] = norm2[i];
+    }
+    h_fmap2.reset(128*18*18);
+    h_act2.reset(128*32*32);
+    d_norm2.reset(1);
+    d_w2.reset(1);
+
     char* Plt = "Altera";
 
     //Get PlatformID
@@ -125,11 +151,17 @@ int main(void){
     d_fmap0[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 3 * 34 * 34, NULL, NULL);
     d_w1[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 3 * 3 * 3, NULL, NULL);
     d_norm1[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
-    d_dim[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
+    d_dim1[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int)*3, NULL, NULL);
     
-    d_fmap1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
+    d_fmap1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 128 * 34 * 34, NULL, NULL);
     
-    h_dim = {128,33,33};
+    h_dim1 = {128,33,33};
+
+    d_w2[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128 * 128 * 3 * 3, NULL, NULL);
+    d_norm2[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 128, NULL, NULL);
+    d_act2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 32 * 32, NULL, NULL);
+    d_fmap2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(bool) * 128 * 18 * 18, NULL, NULL);
+    
     // printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
@@ -144,6 +176,13 @@ int main(void){
         kernel[0] = clCreateKernel(program, "conv", &err);
         checkError(err, "Error: Failed to create compute kernel[%d]!",0);
 
+        queue[1] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",1);  
+
+        kernel[1] = clCreateKernel(program, "layertwo", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",1);
+
+//Layer 1
         // Write our data set into the input array in device memory
         //
         err = clEnqueueWriteBuffer(queue[0], d_fmap0[0], CL_FALSE, 0, sizeof(int) * 3 * 34 * 34, h_fmap0, 0, NULL, NULL);
@@ -155,9 +194,16 @@ int main(void){
         err = clEnqueueWriteBuffer(queue[0], d_norm1[0], CL_FALSE, 0, sizeof(int) * 128, h_norm1, 0, NULL, NULL);
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm1",0);
 
-        err = clEnqueueWriteBuffer(queue[0], d_dim[0], CL_FALSE, 0, sizeof(int) * 3, h_dim, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",0);	
+        err = clEnqueueWriteBuffer(queue[0], d_dim1[0], CL_FALSE, 0, sizeof(int) * 3, h_dim1, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",0);    
       
+//Layer 2
+        err = clEnqueueWriteBuffer(queue[1], d_w2[0], CL_FALSE, 0, sizeof(int) * 128 * 128 * 3 * 3, h_w2, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w2",1);
+
+        err = clEnqueueWriteBuffer(queue[1], d_norm2[0], CL_FALSE, 0, sizeof(int) * 128, h_norm2, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm2",1);
+//Layer 1
         // Set the arguments to our compute kernel
         //
         unsigned argi = 0;
@@ -170,21 +216,41 @@ int main(void){
         err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_norm1[0]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm1",0);
 
-        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_dim[0]);
+        err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_dim1[0]);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_debug",0);
 
         err = clSetKernelArg(kernel[0], argi++, sizeof(cl_mem), &d_fmap1);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",0);
+//Layer 2
+        argi = 0;
+        err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_fmap1);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap1",1);
 
+        err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_w2[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w2",1);
+
+        err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_norm2[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm2",1);
+
+        err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_act2);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act2",1);
+
+        err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_fmap2);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap2",1);
     
     // printf("Completed Setting Arguments \n");
-            err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
-            checkError(err, "Error: Failed to execute kernel[0]");
+    err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[0]");
     
     clFinish(queue[0]);
+    global = {32, 32, 128};
+    err = clEnqueueNDRangeKernel(queue[1], kernel[1], 3, NULL, global, NULL, 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[1]");
 
-    err = clEnqueueReadBuffer(queue[0], d_fmap1, CL_TRUE, 0, sizeof(int) * 128 * 34 * 34, h_fmap1, 0, NULL, NULL);
-    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_act1",N-1);
+    clFinish(queue[1]);
+
+    err = clEnqueueReadBuffer(queue[1], d_fmap2, CL_TRUE, 0, sizeof(bool) * 128 * 18 * 18, h_fmap2, 0, NULL, NULL);
+    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_fmap2",1);
 //    printf("Completed Execution \n");
 
     printf("Complete \n");
@@ -194,17 +260,17 @@ int main(void){
     int flag=0;
 
     for(unsigned char i = 0; i < 128; i++){
-        for(unsigned char j = 0; j < 34; j++){
-            for(unsigned char k = 0; k < 34; k++){
+        for(unsigned char j = 0; j < 18; j++){
+            for(unsigned char k = 0; k < 18; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap1[i][j][k] == h_fmap1[ k + (j * 34) + (i * (34*34))]){
+                if(fmap2[i][j][k] == h_fmap2[ k + (j * 18) + (i * (18*18))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),act1[i][j][k], h_act1[ k + (j * 32) + (i * (32*32))]);
                     correct++;
                 }
                 else{
-                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 34) + (i * (34*34))),fmap1[i][j][k], h_fmap1[ k + (j * 34) + (i * (34*34))]);
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 18) + (i * (18*18))),fmap2[i][j][k], h_fmap2[ k + (j * 18) + (i * (18*18))]);
                     flag++;
                 }
 
@@ -212,11 +278,12 @@ int main(void){
                 //      printf("Matrix %d %d %d - %d\n",i,j,k,flag);
             }
         }
+        
         if(flag > 0)
             printf("Matrix %d  - %d\n",i,flag);
         flag=0;
     }
-    printf("No. of Data Correct for fmap1  %d / %d\n",correct,count);
+    printf("No. of Data Correct for fmap2  %d / %d\n",correct,count);
 
 void cleanup();
 }
@@ -224,19 +291,23 @@ void cleanup();
 
 void cleanup(){
 
-	for(i = 0; i < N ; i ++){        
+    for(i = 0; i < N ; i ++){        
 
-    	clReleaseKernel(kernel[i]);
-    	clReleaseCommandQueue(queue[i]);
-	}
+        clReleaseKernel(kernel[i]);
+        clReleaseCommandQueue(queue[i]);
+    }
 
-	clReleaseMemObject(d_fmap0[0]);
+    clReleaseMemObject(d_fmap0[0]);
     clReleaseMemObject(d_w1[0]);
     clReleaseMemObject(d_norm1[0]);
-	
-	free(h_fmap1);
-    
+
     clReleaseMemObject(d_fmap1);
+    clReleaseMemObject(d_w2[0]);
+    clReleaseMemObject(d_norm2[0]);
+    clReleaseMemObject(d_fmap2);
+    free(h_fmap1);
+    free(h_fmap2);
+    
     clReleaseProgram(program);
     clReleaseContext(context);
 
