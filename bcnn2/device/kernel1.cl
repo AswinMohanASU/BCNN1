@@ -272,4 +272,84 @@ if(fnum5 < d_dim5[0] && (hei5 > 0 && hei5 < d_dim5[1]) && (wid5 > 0 && wid5 < d_
         d_fmap5[index] = 0;
     
 }
+__kernel void layersix( __global int *restrict d_fmap5,
+__global int *restrict d_w6,
+__global int *restrict d_norm6,
+__global int *restrict d_act6,
+__global int *restrict d_fmap6
+){
+          __local int act6;
+          int fnum6, hei6, wid6, index,act6_tp, index2;
+          int i6, j6, k6, fmap, w;
 
+           fnum6 = get_global_id(2);
+           hei6 = get_global_id(0);
+           wid6 = get_global_id(1);
+
+           index = ((wid6 + ((hei6) * 8) + (fnum6 * 8 * 8)));
+
+           act6 = 0;
+      for(i6= 0; i6 < 512; i6++){
+          for(j6 = 0; j6 < 3; j6++){
+            for(k6 = 0; k6 < 3; k6++){
+              
+              fmap = ((wid6+k6) + ((hei6+j6) * 10) + (i6 * (10 * 10)));
+              
+              w = (k6 + (j6 * 3) + (i6 * 3 * 3) + (fnum6 * 3 * 3 * 512));
+
+              act6_tp = !(d_fmap5[fmap] ^ d_w6[w]);
+
+              act6 = act6 + act6_tp;
+            }
+          }
+        }
+
+        d_act6[index] = act6;
+        // Max pooling, normalization and non-linearity
+        
+        if(wid6 < 4 && hei6 < 4){
+          d_fmap6[(wid6) + ((hei6) * 4) + (fnum6 * 4 * 4)] = 0;
+        }
+        
+        if (hei6%2==1 & wid6%2==1)
+        {
+          //swap? N
+          
+          index2 = (fnum6<<4)+(((hei6>>1))<<2)+(wid6>>1);
+          
+          d_fmap6[index2] = poolnorm(d_act6[index],
+                                   d_act6[(wid6) + ((hei6-1) * 8) + (fnum6 * 8 * 8)],
+                                   d_act6[(wid6-1) + ((hei6) * 8) + (fnum6 * 8 * 8)],
+                                   d_act6[(wid6-1) + ((hei6-1) * 8) + (fnum6 * 8 * 8)],
+                                   d_norm6[fnum6]);         
+        }
+
+}
+__kernel void layerseven( __global int *restrict d_fmap6,
+__global int *restrict d_w7,
+__global int *restrict d_norm7,
+__global int *restrict d_act7,
+__global int *restrict d_fmap7
+){
+    int j7, k7,w;
+    bool act7_tp;
+    __local int act7;
+
+           j7 = get_global_id(0);
+    act7 = 0;       
+    for(k7 = 0; k7 < 8192; k7++){
+      w = j7 + (k7 * 1024);
+      
+      act7_tp = !(d_fmap6[k7] ^ d_w7[w]);
+      
+      act7 = act7 + act7_tp;
+    }
+    
+    d_act7[j7]=act7;
+    
+    // Normalization and non-linearity
+    if(act7 > d_norm7[j7])
+      d_fmap7[j7] = 1;
+    else
+      d_fmap7[j7] = 0;  
+}

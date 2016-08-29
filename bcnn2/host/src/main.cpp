@@ -22,7 +22,7 @@
 #include "results.h"
  
  using namespace aocl_utils;
-#define N 5
+#define N 7
 
 unsigned int correct;
 cl_int err;
@@ -72,6 +72,22 @@ scoped_array<cl_mem> d_w5;
 scoped_array<cl_mem> d_dim5;
 cl_mem d_fmap5,d_act5;
 
+scoped_array<cl_mem> d_norm6;
+scoped_array<cl_mem> d_w6;
+cl_mem d_fmap6,d_act6;
+
+scoped_array<cl_mem> d_norm7;
+scoped_array<cl_mem> d_w7;
+cl_mem d_fmap7,d_act7;
+
+scoped_array<cl_mem> d_norm8;
+scoped_array<cl_mem> d_w8;
+cl_mem d_fmap8,d_act8;
+
+scoped_array<cl_mem> d_norm9;
+scoped_array<cl_mem> d_w9;
+cl_mem d_fmap9,d_act9;
+
 
 scoped_aligned_ptr<int> h_fmap0;
 scoped_aligned_ptr<int> h_w1;
@@ -97,6 +113,16 @@ scoped_aligned_ptr<int> h_w5;
 scoped_aligned_ptr<int> h_norm5;
 scoped_aligned_ptr<int> h_act5;
 scoped_aligned_ptr<int> h_fmap5;
+
+scoped_aligned_ptr<int> h_w6;
+scoped_aligned_ptr<int> h_norm6;
+scoped_aligned_ptr<int> h_act6;
+scoped_aligned_ptr<int> h_fmap6;
+
+scoped_aligned_ptr<int> h_w7;
+scoped_aligned_ptr<int> h_norm7;
+scoped_aligned_ptr<int> h_act7;
+scoped_aligned_ptr<int> h_fmap7;
 
 
 void cleanup();
@@ -179,7 +205,36 @@ int main(void){
     h_act5.reset(512*8*8);
     d_norm5.reset(1);
     d_w5.reset(1);
-    d_dim5.reset(1);       
+    d_dim5.reset(1); 
+
+//Layer 6
+    h_w6.reset(512*512*3*3);
+    for(i = 0 ; i < 512*512*3*3 ; i++){
+        h_w6[i] = w6[i];
+    }
+    h_norm6.reset(512);
+    for(i = 0 ; i < 512 ; i ++){
+        h_norm6[i] = norm6[i];
+    }
+    h_fmap6.reset(8192);
+    h_act6.reset(512*8*8);
+    d_norm6.reset(1);
+    d_w6.reset(1);
+
+//Layer 7
+    h_w7.reset(8192*1024);
+    for(i = 0 ; i < 8192*1024 ; i++){
+        h_w7[i] = w7[i];
+    }
+    h_norm7.reset(1024);
+    for(i = 0 ; i < 1024 ; i ++){
+        h_norm7[i] = norm7[i];
+    }
+    h_fmap7.reset(1024);
+    h_act7.reset(1024);
+    d_norm7.reset(1);
+    d_w7.reset(1);    
+             
 
     char* Plt = "Altera";
 
@@ -195,7 +250,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_b4", device);
+    string binary_file = getBoardBinaryFile("kernel_b7", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -256,7 +311,17 @@ int main(void){
     d_act5 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 512 * 8 * 8, NULL, NULL);
     d_fmap5 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 512 * 10 * 10, NULL, NULL);
     
-    h_dim5 = {512,9,9};    
+    h_dim5 = {512,9,9}; 
+
+    d_w6[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 512 * 512 * 3 * 3, NULL, NULL);
+    d_norm6[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 512, NULL, NULL);
+    d_act6 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 512 * 8 * 8, NULL, NULL);
+    d_fmap6 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 8192, NULL, NULL);
+
+    d_w7[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 8192 * 1024, NULL, NULL);
+    d_norm7[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int) * 1024, NULL, NULL);
+    d_act7 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 1024, NULL, NULL);
+    d_fmap7 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int) * 1024, NULL, NULL);   
     // printf("Completed Buffer Creation \n");
     cl_event event_kernel[N];
 
@@ -294,6 +359,18 @@ int main(void){
 
         kernel[4] = clCreateKernel(program, "layerfive", &err);
         checkError(err, "Error: Failed to create compute kernel[%d]!",4);
+
+        queue[5] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",5);  
+
+        kernel[5] = clCreateKernel(program, "layersix", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",5);
+
+        queue[6] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",6);  
+
+        kernel[6] = clCreateKernel(program, "layerseven", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",6); 
 
 //Layer 1
         // Write our data set into the input array in device memory
@@ -342,7 +419,21 @@ int main(void){
         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm5",4);
 
         err = clEnqueueWriteBuffer(queue[4], d_dim5[0], CL_FALSE, 0, sizeof(int) * 3, h_dim5, 0, NULL, NULL);
-        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_dim5",4);                
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_dim5",4);
+
+//Layer 6
+        err = clEnqueueWriteBuffer(queue[5], d_w6[0], CL_FALSE, 0, sizeof(int) * 512 * 512 * 3 * 3, h_w6, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w6",5);
+
+        err = clEnqueueWriteBuffer(queue[5], d_norm6[0], CL_FALSE, 0, sizeof(int) * 512, h_norm6, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm6",5);
+
+//Layer 7
+        err = clEnqueueWriteBuffer(queue[6], d_w7[0], CL_FALSE, 0, sizeof(int) * 8192 *1024, h_w7, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w7",6);
+
+        err = clEnqueueWriteBuffer(queue[6], d_norm7[0], CL_FALSE, 0, sizeof(int) * 1024, h_norm7, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm7",6);                                
 
 //Layer 1
         // Set the arguments to our compute kernel
@@ -433,7 +524,41 @@ int main(void){
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act5",4);
 
         err = clSetKernelArg(kernel[4], argi++, sizeof(cl_mem), &d_fmap5);
-        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap5",4);                
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap5",4);
+
+//Layer 6
+        argi = 0;
+        err = clSetKernelArg(kernel[5], argi++, sizeof(cl_mem), &d_fmap5);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap5",5);
+
+        err = clSetKernelArg(kernel[5], argi++, sizeof(cl_mem), &d_w6[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w6",5);
+
+        err = clSetKernelArg(kernel[5], argi++, sizeof(cl_mem), &d_norm6[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm6",5);
+
+        err = clSetKernelArg(kernel[5], argi++, sizeof(cl_mem), &d_act6);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act6",5);
+
+        err = clSetKernelArg(kernel[5], argi++, sizeof(cl_mem), &d_fmap6);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap6",5);
+
+//Layer 7
+        argi = 0;
+        err = clSetKernelArg(kernel[6], argi++, sizeof(cl_mem), &d_fmap6);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap6",6);
+
+        err = clSetKernelArg(kernel[6], argi++, sizeof(cl_mem), &d_w7[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w7",6);
+
+        err = clSetKernelArg(kernel[6], argi++, sizeof(cl_mem), &d_norm7[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm7",6);
+
+        err = clSetKernelArg(kernel[6], argi++, sizeof(cl_mem), &d_act7);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act7",6);
+
+        err = clSetKernelArg(kernel[6], argi++, sizeof(cl_mem), &d_fmap7);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap7",6);                                
     
     // printf("Completed Setting Arguments \n");
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
@@ -465,8 +590,20 @@ int main(void){
 
     clFinish(queue[4]);
 
-    err = clEnqueueReadBuffer(queue[4], d_fmap5, CL_TRUE, 0, sizeof(int) * 512 * 10 * 10, h_fmap5, 0, NULL, NULL);
-    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_fmap5",4);
+    global = {8, 8, 512};
+    err = clEnqueueNDRangeKernel(queue[5], kernel[5], 3, NULL, global, NULL, 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[5]");
+
+    clFinish(queue[5]);
+
+    global = {1024, 1, 1};
+    err = clEnqueueNDRangeKernel(queue[6], kernel[6], 3, NULL, global, NULL, 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[6]");
+
+    clFinish(queue[6]);
+
+    err = clEnqueueReadBuffer(queue[6], d_fmap7, CL_TRUE, 0, sizeof(int) * 1024, h_fmap7, 0, NULL, NULL);
+    checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_fmap7",6);
 //    printf("Completed Execution \n");
 
     printf("Complete \n");
@@ -474,34 +611,50 @@ int main(void){
     correct=0;
     int count=0;
     int flag=0;
-    for(int i = 0; i < 512; i++){
-        for(int j = 0; j < 10; j++){
-            for(int k = 0; k < 10; k++){
+    // for(int i = 0; i < 512; i++){
+    //     for(int j = 0; j < 10; j++){
+    //         for(int k = 0; k < 10; k++){
+    //             count++;
+    //             //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
+
+    //             if(fmap5[i][j][k] == h_fmap5[ k + (j * 10) + (i * (10*10))]){
+    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
+    //                 correct++;
+    //             }
+    //             else{
+    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
+    //                 //if((j > 0 && j < 17) && (k > 0 && k < 17))
+    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",((k-1) + ((j-1) * 16) + (i * (16*16))),act3[i][j-1][k-1], h_act3[((k-1) + ((j-1) * 16) + (i * (16*16)))]);
+
+    //                 flag++;
+    //             }
+
+    //                //if(flag > 0)
+    //                    //printf("Matrix %d %d %d - %d\n",i,j,k,flag);
+    //         }
+    //     }
+        
+    //     // if(flag > 0)
+    //     //     printf("Matrix %d  - %d\n",i,flag);
+    //     flag=0;
+    // }
+
+       for(int i = 0; i < 1024; i++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap5[i][j][k] == h_fmap5[ k + (j * 10) + (i * (10*10))]){
+                if(fmap7[i] == h_fmap7[i]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
                     correct++;
                 }
                 else{
-                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
+                    printf("Index %d ->> Expected = %d  Optained = %d\n",i,fmap7[i], h_fmap7[i]);
                     //if((j > 0 && j < 17) && (k > 0 && k < 17))
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",((k-1) + ((j-1) * 16) + (i * (16*16))),act3[i][j-1][k-1], h_act3[((k-1) + ((j-1) * 16) + (i * (16*16)))]);
-
-                    flag++;
                 }
 
-                   //if(flag > 0)
-                       //printf("Matrix %d %d %d - %d\n",i,j,k,flag);
-            }
-        }
-        
-        if(flag > 0)
-            printf("Matrix %d  - %d\n",i,flag);
-        flag=0;
     }
-    printf("No. of Data Correct for act5  %d / %d\n",correct,count);
+     printf("No. of Data Correct for fmap7  %d / %d\n",correct,count);
 
 void cleanup();
 }
@@ -535,17 +688,29 @@ void cleanup(){
     clReleaseMemObject(d_w5[0]);
     clReleaseMemObject(d_norm5[0]);
     clReleaseMemObject(d_fmap5);
-    
-    free(h_fmap1);
-    free(h_fmap2);
-    free(h_fmap3);
-    free(h_fmap4);
-    free(h_fmap5);
 
-    free(h_act2);
-    free(h_act3);
-    free(h_act4);
-    free(h_act5);
+    clReleaseMemObject(d_w6[0]);
+    clReleaseMemObject(d_norm6[0]);
+    clReleaseMemObject(d_fmap6);
+
+    clReleaseMemObject(d_w7[0]);
+    clReleaseMemObject(d_norm7[0]);
+    clReleaseMemObject(d_fmap7);
+    
+    // free(h_fmap1);
+    // free(h_fmap2);
+    // free(h_fmap3);
+    // free(h_fmap4);
+    // free(h_fmap5);
+    // free(h_fmap6);
+    // free(h_fmap7);
+
+    // free(h_act2);
+    // free(h_act3);
+    // free(h_act4);
+    // free(h_act5);
+    // free(h_act6);
+    // free(h_act7);
     
     clReleaseProgram(program);
     clReleaseContext(context);
