@@ -602,7 +602,7 @@ int main(void){
 
     clFinish(queue[6]);
 
-    err = clEnqueueReadBuffer(queue[6], d_fmap7, CL_TRUE, 0, sizeof(int) * 1024, h_fmap7, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue[6], d_fmap3, CL_TRUE, 0, sizeof(int) * 256*18*18, h_fmap3, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - d_fmap7",6);
 //    printf("Completed Execution \n");
 
@@ -611,49 +611,49 @@ int main(void){
     correct=0;
     int count=0;
     int flag=0;
-    // for(int i = 0; i < 512; i++){
-    //     for(int j = 0; j < 10; j++){
-    //         for(int k = 0; k < 10; k++){
-    //             count++;
-    //             //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
-
-    //             if(fmap5[i][j][k] == h_fmap5[ k + (j * 10) + (i * (10*10))]){
-    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
-    //                 correct++;
-    //             }
-    //             else{
-    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
-    //                 //if((j > 0 && j < 17) && (k > 0 && k < 17))
-    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",((k-1) + ((j-1) * 16) + (i * (16*16))),act3[i][j-1][k-1], h_act3[((k-1) + ((j-1) * 16) + (i * (16*16)))]);
-
-    //                 flag++;
-    //             }
-
-    //                //if(flag > 0)
-    //                    //printf("Matrix %d %d %d - %d\n",i,j,k,flag);
-    //         }
-    //     }
-        
-    //     // if(flag > 0)
-    //     //     printf("Matrix %d  - %d\n",i,flag);
-    //     flag=0;
-    // }
-
-       for(int i = 0; i < 1024; i++){
+    for(int i = 0; i < 256; i++){
+        for(int j = 0; j < 18; j++){
+            for(int k = 0; k < 18; k++){
                 count++;
                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
 
-                if(fmap7[i] == h_fmap7[i]){
+                if(fmap3[i][j][k] == h_fmap3[ k + (j * 18) + (i * (18*18))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
                     correct++;
                 }
                 else{
-                    printf("Index %d ->> Expected = %d  Optained = %d\n",i,fmap7[i], h_fmap7[i]);
+                    //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
                     //if((j > 0 && j < 17) && (k > 0 && k < 17))
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",((k-1) + ((j-1) * 16) + (i * (16*16))),act3[i][j-1][k-1], h_act3[((k-1) + ((j-1) * 16) + (i * (16*16)))]);
+
+                    flag++;
                 }
 
+                   //if(flag > 0)
+                       //printf("Matrix %d %d %d - %d\n",i,j,k,flag);
+            }
+        }
+        
+        // if(flag > 0)
+        //     printf("Matrix %d  - %d\n",i,flag);
+        flag=0;
     }
+
+    //    for(int i = 0; i < 1024; i++){
+    //             count++;
+    //             //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 32) + (i * (32*32))),w1[i][2][2][2], h_w1[ 2 + (2 * 3) + (2 * 3 * 3) + (i * 3 * 3 * 3)]);
+
+    //             if(fmap7[i] == h_fmap7[i]){
+    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
+    //                 correct++;
+    //             }
+    //             else{
+    //                 printf("Index %d ->> Expected = %d  Optained = %d\n",i,fmap7[i], h_fmap7[i]);
+    //                 //if((j > 0 && j < 17) && (k > 0 && k < 17))
+    //                 //printf("Index %d ->> Expected = %d  Optained = %d\n",((k-1) + ((j-1) * 16) + (i * (16*16))),act3[i][j-1][k-1], h_act3[((k-1) + ((j-1) * 16) + (i * (16*16)))]);
+    //             }
+
+    // }
      printf("No. of Data Correct for fmap7  %d / %d\n",correct,count);
 
 void cleanup();
