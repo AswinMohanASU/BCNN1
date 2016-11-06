@@ -288,7 +288,7 @@ int main(void){
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     checkError(err,"Error: Failed to Create context!");
 
-    string binary_file = getBoardBinaryFile("kernel_mask_b4", device);
+    string binary_file = getBoardBinaryFile("kernel_mask_test", device);
     printf("Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -669,7 +669,7 @@ int main(void){
     
      printf("Completed Setting Arguments \n");
 
-    global = {34, 34, 128};    
+    global = {1, 1, 1};    
     err = clEnqueueNDRangeKernel(queue[0], kernel[0], 3, NULL, global, NULL, 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[0]");
     
@@ -777,7 +777,7 @@ int main(void){
                 }
 
     }
-     printf("No. of Data Correct for fmap2  %d / %d\n",correct,count);
+     printf("No. of Data Correct for fmap9  %d / %d\n",correct,count);
 
 void cleanup();
 }

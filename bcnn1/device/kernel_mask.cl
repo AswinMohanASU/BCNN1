@@ -55,14 +55,14 @@ if(fnum1 < d_dim1[0] && (hei1 > 0 && hei1 < d_dim1[1]) && (wid1 > 0 && wid1 < d_
             act1 = 0;
             #pragma unroll 1
             for(i1 = 0; i1 < 3; i1++){
-                #pragma unroll 1
+                #pragma unroll 3
                 for(j1 = 0; j1 < 3; j1++){
-                    #pragma unroll 1
+                    #pragma unroll 3
                     for(k1 = 0; k1 < 3; k1++){
 
                             fmap = ((wid1+k1-1) + ((hei1+j1-1) * 34) + (i1 * (34 * 34)));
                             w = (k1 + (j1 * 3) + (i1 * 3 * 3) + (fnum1 * 3 * 3 * 3));
-
+		      printf("w = %d\n",w);	
                             temp =  d_fmap0[fmap] * d_w1[w];
                             act1 =  act1 + temp;
 
@@ -102,9 +102,9 @@ __global bool *restrict d_fmap2
 
            act2 = 0;
       for(i2 = 0; i2 < 128; i2++){
-          #pragma unroll 1
+          #pragma unroll 3
           for(j2 = 0; j2 < 3; j2++){
-            #pragma unroll 1
+            #pragma unroll 3
             for(k2 = 0; k2 < 3; k2++){
               
               fmap = ((wid2+k2) + ((hei2+j2) * 34) + (i2 * (34 * 34)));
@@ -164,9 +164,9 @@ if(fnum3 < d_dim3[0] && (hei3 > 0 && hei3 < d_dim3[1]) && (wid3 > 0 && wid3 < d_
             index2 = (wid3-1) + ((hei3-1) * 16) + (fnum3 * 16 * 16);
             act3 = 0;
             for(i3 = 0; i3 < 128; i3++){
-               #pragma unroll 1
+               #pragma unroll 3
                 for(j3 = 0; j3 < 3; j3++){
-                    #pragma unroll 1
+                    #pragma unroll 3
                     for(k3 = 0; k3 < 3; k3++){
 
                             fmap = ((wid3+k3-1) + ((hei3+j3-1) * 18) + (i3 * (18 * 18)));
@@ -210,9 +210,9 @@ __global bool *restrict d_fmap4
 
            act4 = 0;
       for(i4 = 0; i4 < 256; i4++){
-          #pragma unroll 1
+          #pragma unroll 3
           for(j4 = 0; j4 < 3; j4++){
-            #pragma unroll 1
+            #pragma unroll 3
             for(k4 = 0; k4 < 3; k4++){
               
               fmap = ((wid4+k4) + ((hei4+j4) * 18) + (i4 * (18 * 18)));
@@ -271,9 +271,9 @@ if(fnum5 < d_dim5[0] && (hei5 > 0 && hei5 < d_dim5[1]) && (wid5 > 0 && wid5 < d_
             index2 = (wid5-1) + ((hei5-1) * 8) + (fnum5 * 8 * 8);
             act5 = 0;
             for(i5 = 0; i5 < 256; i5++){
-                #pragma unroll 1
+                #pragma unroll 3
                 for(j5 = 0; j5 < 3; j5++){
-                    #pragma unroll 1
+                    #pragma unroll 3
                     for(k5 = 0; k5 < 3; k5++){
 
                             fmap = ((wid5+k5-1) + ((hei5+j5-1) * 10) + (i5 * (10 * 10)));
@@ -318,9 +318,9 @@ __global bool *restrict d_fmap6
 
            act6 = 0;
       for(i6= 0; i6 < 512; i6++){
-          #pragma unroll 1
+          #pragma unroll 3
           for(j6 = 0; j6 < 3; j6++){
-            #pragma unroll 1
+            #pragma unroll 3
             for(k6 = 0; k6 < 3; k6++){
               
               fmap = ((wid6+k6) + ((hei6+j6) * 10) + (i6 * (10 * 10)));
