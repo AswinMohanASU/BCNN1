@@ -286,7 +286,7 @@ for(i =0 ; i < 128; i++)
 
 count++;
 
-int temp[128][w+4],read_flag;
+int temp[128][38],read_flag;
 if(count%16 == 0 && count%(16*16)!=0)
   read_flag=w+4;
 else if(count%16 != 0 && count%(16*16)!=0)
@@ -300,7 +300,7 @@ for(i=0;i<read_flag;i++)
     temp[j][i]= read_channel_altera(lonetoltwo1);
 }
 
-if(read_flag==w+4){
+if(read_flag==38){
   for(i=0; i < 128; i++) 
   { 
    for(i1=38; i1 < ((3 * 34) + 4);++i1) // w+4 => 38 
