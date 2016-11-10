@@ -92,7 +92,7 @@ cl_mem d_fmap9,d_act9;
 scoped_aligned_ptr<char> h_fmap0;
 scoped_aligned_ptr<char> h_w1;
 scoped_aligned_ptr<short> h_norm1;
-scoped_aligned_ptr<bool> h_fmap1;
+scoped_aligned_ptr<int> h_fmap1;
 scoped_aligned_ptr<int> h_act1;
 
 scoped_aligned_ptr<bool> h_w2;
@@ -159,7 +159,7 @@ int main(void){
     d_norm1.reset(1);
     d_w1.reset(1);
     d_dim1.reset(1);
-    h_act1.reset(128*34*34);
+    h_act1.reset(128*18*18);
 //Layer 2
     h_w2.reset(128*128*3*3);
     for(i = 0 ; i < 128*128*3*3 ; i ++){
@@ -321,7 +321,7 @@ int main(void){
     d_norm1[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(short) * 128, NULL, NULL);
     d_dim1[0] = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(char)*3, NULL, NULL);
     
-    d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 34 * 34, NULL, NULL);
+    d_act1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * 128 * 18 * 18, NULL, NULL);
 
     d_fmap1 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(bool) * 128 * 34 * 34, NULL, NULL);
     
@@ -393,28 +393,28 @@ int main(void){
         checkError(err, "Error: Failed to create compute kernel[%d]!",1);
 
         queue[2] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        checkError(err, "Error: Failed to create a command queue[%d]!",3);  
-
-        kernel[2] = clCreateKernel(program, "add_border", &err);
-        checkError(err, "Error: Failed to create compute kernel[%d]!",3);
-
-        queue[3] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
         checkError(err, "Error: Failed to create a command queue[%d]!",2);  
 
-        kernel[3] = clCreateKernel(program, "write_data", &err);
+        kernel[2] = clCreateKernel(program, "add_border", &err);
         checkError(err, "Error: Failed to create compute kernel[%d]!",2);
 
-        // queue[4] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        // checkError(err, "Error: Failed to create a command queue[%d]!",4);  
+        queue[3] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",3);  
 
-        // kernel[4] = clCreateKernel(program, "layerfive", &err);
-        // checkError(err, "Error: Failed to create compute kernel[%d]!",4);
+        kernel[3] = clCreateKernel(program, "write_data", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",3);
 
-        // queue[5] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
-        // checkError(err, "Error: Failed to create a command queue[%d]!",5);  
+        queue[4] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",4);  
 
-        // kernel[5] = clCreateKernel(program, "layersix", &err);
-        // checkError(err, "Error: Failed to create compute kernel[%d]!",5);
+        kernel[4] = clCreateKernel(program, "layer_two", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",4);
+
+        queue[5] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
+        checkError(err, "Error: Failed to create a command queue[%d]!",5);  
+
+        kernel[5] = clCreateKernel(program, "add_border_two", &err);
+        checkError(err, "Error: Failed to create compute kernel[%d]!",5);
 
         // queue[6] = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
         // checkError(err, "Error: Failed to create a command queue[%d]!",6);  
@@ -450,11 +450,11 @@ int main(void){
         // checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_debug",0);    
       
 // //Layer 2
-//         err = clEnqueueWriteBuffer(queue[1], d_w2[0], CL_FALSE, 0, sizeof(bool) * 128 * 128 * 3 * 3, h_w2, 0, NULL, NULL);
-//         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w2",1);
+        err = clEnqueueWriteBuffer(queue[4], d_w2[0], CL_FALSE, 0, sizeof(bool) * 128 * 128 * 3 * 3, h_w2, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_w2",1);
 
-//         err = clEnqueueWriteBuffer(queue[1], d_norm2[0], CL_FALSE, 0, sizeof(short) * 128, h_norm2, 0, NULL, NULL);
-//         checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm2",1);
+        err = clEnqueueWriteBuffer(queue[4], d_norm2[0], CL_FALSE, 0, sizeof(short) * 128, h_norm2, 0, NULL, NULL);
+        checkError(err, "Error: Failed to copy kernel arguments! - kernel[%d] - h_norm2",1);
 
 // //Layer 3        
 //         err = clEnqueueWriteBuffer(queue[2], d_w3[0], CL_FALSE, 0, sizeof(bool) * 256 * 128 * 3 * 3, h_w3, 0, NULL, NULL);
@@ -536,15 +536,15 @@ int main(void){
         err = clSetKernelArg(kernel[3], 0, sizeof(cl_mem), &d_act1);
         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act1",3);
 //Layer 2
-//         argi = 0;
+        argi = 0;
 //         err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_fmap1);
 //         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_fmap1",1);
 
-//         err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_w2[0]);
-//         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w2",1);
+        err = clSetKernelArg(kernel[4], argi++, sizeof(cl_mem), &d_w2[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_w2",1);
 
-//         err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_norm2[0]);
-//         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm2",1);
+        err = clSetKernelArg(kernel[4], argi++, sizeof(cl_mem), &d_norm2[0]);
+        checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_norm2",1);
 
 //         err = clSetKernelArg(kernel[1], argi++, sizeof(cl_mem), &d_act2);
 //         checkError(err, "Error: Failed to set kernel arguments! - kernel[%d] - d_act2",1);
@@ -745,31 +745,37 @@ int main(void){
     err = clEnqueueTask(queue[2], kernel[2], 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[2]");
 
+    err = clEnqueueTask(queue[4], kernel[4], 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[2]");
+
+    err = clEnqueueTask(queue[5], kernel[5], 0, NULL, NULL);
+    checkError(err, "Error: Failed to execute kernel[2]");
+
     err = clEnqueueTask(queue[3], kernel[3], 0, NULL, NULL);
     checkError(err, "Error: Failed to execute kernel[3]");
     
     clFinish(queue[3]);
     
-    err = clEnqueueReadBuffer(queue[3], d_act1, CL_TRUE, 0, sizeof(int) * 34*34*128, h_act1, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue[3], d_act1, CL_TRUE, 0, sizeof(int) * 18*18*128, h_act1, 0, NULL, NULL);
     checkError(err, "Error: Failed to read kernel arguments! - kernel[%d] - h_act1",3);
 
-    printf("Complete \n");
+    //printf("Complete \n");
 
     correct=0;
     int count=0;
     int flag=0;
 
-     for(int i = 0; i < 1; i++){
-         for(int j = 1; j < 2; j++){
-             for(int k = 0; k < 34; k++){
-                 printf("%d\n",h_act1[k + (j * 34) + (i * (34*34))]);
-                 //count++;
-                 //if(h_fmap0[i][j][k] == h_fmap0_1[ k + (j * 34) + (i * (34*34))]){
+for(int i = 0; i < 128; i++){
+         for(int j = 0; j < 18; j++){
+             for(int k = 0; k < 18; k++){
+                 //printf("%d ",h_act1[k + (j * 34) + (i * (34*34))]);
+                 count++;
+                 if(fmap2[i][j][k] == h_act1[k + (j * 18) + (i * (18*18))]){
                     //printf("Index %d ->> Expected = %d  Optained = %d\n",(k + (j * 8) + (i * (8*8))),act5[i][j][k], h_act5[ k + (j * 8) + (i * (8*8))]);
-                   // correct++;
-               // }
+                    correct++;
+                }
 
-             }
+             }//printf("\n");
          }
      }
 
@@ -818,7 +824,7 @@ int main(void){
     //             }
 
     // }
-    //  printf("No. of Data Correct for fmap9  %d / %d\n",correct,count);
+      printf("No. of Data Correct for fmap2  %d / %d\n",correct,count);
 
 void cleanup();
 }
